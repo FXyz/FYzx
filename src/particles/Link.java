@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fyzx.tests.masses;
+package particles;
 
 import static java.lang.Math.sqrt;
 
@@ -23,7 +23,7 @@ import static java.lang.Math.sqrt;
  *
  * @author Jason Pollastrini aka jdub1581
  */
-// The Link class is used for handling distance constraints between PointMasss.
+// The Link class is used for handling distance constraints between PointMasses.
 public class Link {
 
     private final double restingDistance;
@@ -32,9 +32,6 @@ public class Link {
 
     private final PointMass p1;
     private final PointMass p2;
-
-    // if you want this link to be invisible, set this to false
-    boolean drawThis = true;
 
     public Link(PointMass which1, PointMass which2, double restingDist, double stiff, double tearSensitivity) {
         this.p1 = which1; 

@@ -15,41 +15,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fyzx.tests.masses;
+package particles;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import javafx.collections.ObservableList;
+import particles.Link;
 
 /**
  *
  * @author Jason Pollastrini aka jdub1581
  */
 // PointMass
-class PointMass {
+public class PointMass{
 
-    private double lastX, lastY, lastZ; // for calculating position change (velocity)
-    private double x, y, z;
-    private double accX = 0, accY = 0, accZ;
-    private double gravity = 980;
-    // every PointMass within this many pixels will be influenced by the cursor
-    private double mouseInfluenceSize = 20;
-// minimum distance for tearing when user is right clicking
-    private double mouseTearSize = 8;
-    private double mouseInfluenceScalar = 5;
-    private double mass = 2;
+    private double lastX = 0, lastY = 0, lastZ = 0; // for calculating position change (velocity)
+    private double x = 0, y = 0, z = 0;
+    private double accX = 0, accY = 0, accZ = 0;
+    private double gravity;
+    private double mass = 1;
     private double damping = 20;
 
-    // An ArrayList for links, so we can have as many links as we want to this PointMass
-    List<Link> links = new ArrayList<>();
+    // List for links, so we can have as many links as we want to this PointMass
+    private List<Link> links = new ArrayList<>();
+    private ConcurrentHashMap<String, Link> constraints = new ConcurrentHashMap<>();
+    private boolean pinned = false;
+    private double pinX = 0, pinY = 0, pinZ = 0;
 
-    boolean pinned = false;
-    private double pinX, pinY, pinZ;
-    
     private boolean debug;
-    
+    private final Object target;
 
     // PointMass constructor
-    public PointMass(double xPos, double yPos, double zPos) {
+    public PointMass(Object target, double xPos, double yPos, double zPos) {
+        this.target = target;
         this.x = xPos;
         this.y = yPos;
         this.z = zPos;
@@ -63,10 +62,9 @@ class PointMass {
         this.accZ = 0;
     }
 
-    // The update function is used to update the physics of the PointMass.
-    // motion is applied, and links are drawn here
-    public void updatePhysics(double timeStep) { // timeStep should be in elapsed seconds (deltaTime)
-        
+    // The update function is used to update the physics of the PointMass.    
+    public void updatePhysics(double timeStep) {
+
         double velX = getX() - getLastX();
         double velY = getY() - getLastY();
         double velZ = getZ() - getLastZ();
@@ -83,8 +81,6 @@ class PointMass {
         double nextY = getY() + velY + getAccY() * 0.5f * timeStepSq;
         double nextZ = getZ() + velZ + getAccZ() * 0.5f * timeStepSq;
 
-        //System.out.println(getAccX());
-        //System.out.println(getAccY());
         // reset variables
         setLastX(getX());
         setLastY(getY());
@@ -101,32 +97,33 @@ class PointMass {
         if (!isPinned()) {
             setX(getX());
             setY(getY());
-            setZ(getZ());                       
-        }       
+            setZ(getZ());
+        }
     }
 
-    
     /* Constraints */
 
     public void solveConstraints() {
         /* Link Constraints */
         // Links make sure PointMasss connected to this one is at a set distance away
-        if(!links.isEmpty()){
-            links.stream().forEach((link) -> {
-                link.solve();
+        // changed from List
+        /*if (!links.isEmpty()) {
+            links.stream().forEach((l) -> {
+                l.solve();
             });
-
+        }*/
+            constraints.values().forEach(l->{l.solve();});
             /* Boundary Constraints */
             // These if statements keep the PointMasss within the screen
             if (getY() < 1) {
                 setY(2 * (1) - getY());
             }
-            if (getY() > 800 - 1) {
-                setY(2 * (800 - 1) - getY());
+            if (getY() > 1050 - 1) {
+                setY(2 * (1050 - 1) - getY());
             }
 
-            if (getX() > 800 - 1) {
-                setX(2 * (800 - 1) - getX());
+            if (getX() > 1920 - 1) {
+                setX(2 * (1920 - 1) - getX());
             }
             if (getX() < 1) {
                 setX(2 * (1) - getX());
@@ -139,30 +136,9 @@ class PointMass {
                 setY(getPinY());
                 setZ(getPinZ());
             }
-        }
+       
     }
 
-    // attachTo can be used to create links between this PointMass and other PointMasss
-    public void attachTo(PointMass P, double restingDist, double stiff) {
-        attachTo(P, restingDist, stiff, 30, true);
-    }
-
-    public void attachTo(PointMass P, double restingDist, double stiff, boolean drawLink) {
-        attachTo(P, restingDist, stiff, 30, drawLink);
-    }
-
-    public void attachTo(PointMass P, double restingDist, double stiff, double tearSensitivity) {
-        attachTo(P, restingDist, stiff, tearSensitivity, true);
-    }
-
-    public void attachTo(PointMass P, double restingDist, double stiff, double tearSensitivity, boolean drawLink) {
-        Link lnk = new Link(this, P, restingDist, stiff, tearSensitivity);
-        links.add(lnk);
-    }
-
-    public void removeLink(Link lnk) {
-        links.remove(lnk);
-    }
 
     public void applyForce(double fX, double fY, double fZ) {
         // acceleration = (1/mass) * force
@@ -173,11 +149,36 @@ class PointMass {
         this.setAccZ(getAccZ() + fZ / getMass());
     }
 
+    // attachTo can be used to create links between this PointMass and other PointMasss
+    public final void attachTo(PointMass P, double restingDist, double stiff) {
+        attachTo(P, restingDist, stiff, 30, true);
+    }
+
+    public final void attachTo(PointMass P, double restingDist, double stiff, boolean drawLink) {
+        attachTo(P, restingDist, stiff, 30, drawLink);
+    }
+
+    public final void attachTo(PointMass P, double restingDist, double stiff, double tearSensitivity) {
+        attachTo(P, restingDist, stiff, tearSensitivity, true);
+    }
+
+    public final void attachTo(PointMass P, double restingDist, double stiff, double tearSensitivity, boolean drawLink) {
+        Link lnk = new Link(this, P, restingDist, stiff, tearSensitivity);
+        
+        constraints.put(P.toString(), lnk);
+    }
+
     public void pinTo(double pX, double pY, double pZ) {
         this.pinned = true;
         this.pinX = pX;
         this.pinY = pY;
         this.pinZ = pZ;
+    }
+
+    public void removeLink(Link lnk) {
+        //links.remove(lnk);
+        
+        constraints.values().remove(lnk);
     }
 
     public double getLastX() {
@@ -288,7 +289,7 @@ class PointMass {
         return links;
     }
 
-    public void setLinks(List<Link> links) {
+    public void setLinks(ObservableList<Link> links) {
         this.links = links;
     }
 
@@ -316,7 +317,6 @@ class PointMass {
         this.pinY = pinY;
     }
 
-
     public boolean isDebug() {
         return debug;
     }
@@ -325,4 +325,9 @@ class PointMass {
         this.debug = debug;
     }
     
+     public ConcurrentHashMap<String, Link> getConstraints() {
+     return constraints;
+     }
+     
+
 }

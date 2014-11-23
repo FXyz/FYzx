@@ -15,70 +15,101 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fyzx.tests.masses;
+package particles;
 
 import static java.lang.Math.min;
 import java.util.List;
+import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Sphere;
+import javafx.scene.transform.Affine;
 
 /**
  *
  * @author Jason Pollastrini aka jdub1581
  */
-public class MassParticle extends Sphere {
+public class Particle extends Sphere {
 
     private final PhongMaterial material = new PhongMaterial(Color.CHARTREUSE);
-    private final PointMass massPoint;
+    private PointMass massPoint;
     private boolean mousePressed;
     private boolean primaryButtonDown;
     private final double mouseInfluenceScalar = 5;
     private final double mouseInfluenceSize = 20;
-    private final double mouseTearSize = 8;
+    private final double mouseTearSize = 10;
     public double mouX;
     public double mouY;
     public double oldMouX;
     public double oldMouY;
+    private final Affine affine = new Affine();
 
-    public MassParticle(double x, double y, double z) {
-        this.massPoint = new PointMass(x, y, z);
-
-        this.setTranslateX(massPoint.getX());
-        this.setTranslateY(massPoint.getY());
-        this.setTranslateZ(massPoint.getZ());
-
+    public Particle() {
         this.setMaterial(material);
-        this.setRadius(1);
-        
-        this.setOnMousePressed(e->{
-            oldMouX = mouX; oldMouY = mouY;
-            mouX = e.getSceneX(); mouY = e.getSceneY();
+        this.setRadius(3);
+        this.getTransforms().add(affine);
+        setOnMouseEntered(e -> {
+            oldMouX = mouX;
+            oldMouY = mouY;
+            mouX = e.getSceneX();
+            mouY = e.getSceneY();
             mousePressed = true;
-            if(e.isPrimaryButtonDown()){
-                primaryButtonDown = true;
+        });
+        setOnMousePressed(e -> {
+            double distanceSquared = distPointToSegmentSquared(oldMouX, oldMouY, mouX, mouY, getX(), getY());
+            if (e.isPrimaryButtonDown()) {
+                if (distanceSquared < mouseInfluenceSize) { // remember mouseInfluenceSize was squared in setup()
+                    // To change the velocity of our PointMass, we subtract that change from the lastPosition.
+                    // When the physics gets integrated (see updatePhysics()), the change is calculated
+                    // Here, the velocity is set equal to the cursor's velocity
+                    setLastX(getX() - (mouX - oldMouX) * mouseInfluenceScalar);
+                    setLastY(getY() - (mouX - oldMouX) * mouseInfluenceScalar);
+                }
+            }
+            if(e.isSecondaryButtonDown()){
+                massPoint.getConstraints().clear();
+                ((Group)getParent()).getChildren().remove(this);
             }
         });
-        this.setOnMouseReleased(e->{
+        setOnMouseExited(e -> {
             mousePressed = false;
-            primaryButtonDown = true;            
+            primaryButtonDown = false;
         });
+    }
+
+    public Particle(PointMass massPoint) {
+        this();
+        this.massPoint = massPoint;
+        this.affine.setTx(massPoint.getX());
+        this.affine.setTy(massPoint.getY());
+        this.affine.setTz(massPoint.getZ());
+    }
+
+    public Particle(double x, double y, double z) {
+        this();
+        this.massPoint = new PointMass(this, x, y, z);
+        this.affine.setTx(massPoint.getX());
+        this.affine.setTy(massPoint.getY());
+        this.affine.setTz(massPoint.getZ());
     }
 
     public PointMass getPointMass() {
         return massPoint;
     }
 
-    public void updatePhysics(double timeStep) {
-        massPoint.updatePhysics(timeStep);
+    public void updateUI() {
         if (!isPinned()) {
-            this.setTranslateX(massPoint.getX());
-            this.setTranslateY(massPoint.getY());
-            this.setTranslateZ(massPoint.getZ());
+            this.affine.setTx(massPoint.getX());
+            this.affine.setTy(massPoint.getY());
+            this.affine.setTz(massPoint.getZ());
         }
     }
 
-    /*void updateInteractions() {
+    public void updatePhysics(double timeStep) {
+        massPoint.updatePhysics(timeStep);
+    }
+
+    public void updateInteractions() {
         // this is where our interaction comes in.
         if (mousePressed) {
             double distanceSquared = distPointToSegmentSquared(oldMouX, oldMouY, mouX, mouY, getX(), getY());
@@ -91,13 +122,12 @@ public class MassParticle extends Sphere {
                     setLastY(getY() - (mouX - oldMouX) * mouseInfluenceScalar);
                 }
             } else { // if the right mouse button is clicking, we tear the cloth by removing links
-                if (distanceSquared < mouseTearSize) //getLinks().clear();
-                {
-                    
+                if (distanceSquared < mouseTearSize) {
+                    //getLinks().clear();
                 }
             }
         }
-    }*/
+    }
 
     public void solveConstraints() {
         massPoint.solveConstraints();
@@ -233,10 +263,6 @@ public class MassParticle extends Sphere {
 
     public List<Link> getLinks() {
         return massPoint.getLinks();
-    }
-
-    public void setLinks(List<Link> links) {
-        massPoint.setLinks(links);
     }
 
     public boolean isPinned() {
