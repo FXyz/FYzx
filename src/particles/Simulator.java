@@ -106,7 +106,7 @@ public class Simulator extends Application {
                 if (y == 1 && x == 0) {
                     thisParticle.pinTo(thisParticle.getX(), thisParticle.getY(), thisParticle.getZ());
                 }
-                if (y == 0) {
+                if (y == 0 && x%15<2) {
                     thisParticle.pinTo(thisParticle.getX(), thisParticle.getY(), thisParticle.getZ());
                 }
                 if (y == 0 && x == curtainWidth) {
@@ -153,22 +153,20 @@ public class Simulator extends Application {
           
             for (int iteration = 1; iteration <= timeStepAmt; iteration++) {
                 for (int x = 0; x < constraintAccuracy; x++) {                    
-                    masses.stream().forEach((p) -> {
-                        p.solveConstraints();
-                        //log.log(Level.INFO, "Solving Constraint");
-                    });
+                    masses.parallelStream().forEach(Particle::solveConstraints);
                     
                 }
                 //log.log(Level.INFO, "Done Solving Constraints");
-                masses.stream().forEachOrdered((p) -> {
-                    p.applyForce(0, gravity, 0);
-                    p.updateInteractions();
-                    p.updatePhysics(fixedDeltaTimeSeconds);
-                    p.updateUI();
-                    //log.log(Level.INFO, "Updated Physics and UI");
+                masses.parallelStream().forEach(p->{
+                    p.applyForce(0, gravity, 0); 
+                    p.updateInteractions(); 
+                    p.updatePhysics(fixedDeltaTimeSeconds); 
                 });
+                if(iteration==timeStepAmt){
+                    masses.stream().forEach(Particle::updateUI);
+                }
             }     
-            
+            log.log(Level.INFO, "Updated Physics and UI {0}", (System.currentTimeMillis()-currentTime));
         }
     };
 

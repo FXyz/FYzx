@@ -18,10 +18,9 @@
 package particles;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import javafx.collections.ObservableList;
-import particles.Link;
 
 /**
  *
@@ -39,7 +38,7 @@ public class PointMass{
 
     // List for links, so we can have as many links as we want to this PointMass
     private List<Link> links = new ArrayList<>();
-    private ConcurrentHashMap<String, Link> constraints = new ConcurrentHashMap<>();
+    private final HashMap<String, Link> constraints = new HashMap<>();
     private boolean pinned = false;
     private double pinX = 0, pinY = 0, pinZ = 0;
 
@@ -112,30 +111,30 @@ public class PointMass{
                 l.solve();
             });
         }*/
-            constraints.values().forEach(l->{l.solve();});
-            /* Boundary Constraints */
-            // These if statements keep the PointMasss within the screen
-            if (getY() < 1) {
-                setY(2 * (1) - getY());
-            }
-            if (getY() > 1050 - 1) {
-                setY(2 * (1050 - 1) - getY());
-            }
+        constraints.values().parallelStream().forEach(Link::solve);
+        /* Boundary Constraints */
+        // These if statements keep the PointMasss within the screen
+        if (getY() < 1) {
+            setY(2 * (1) - getY());
+        }
+        if (getY() > 1050 - 1) {
+            setY(2 * (1050 - 1) - getY());
+        }
 
-            if (getX() > 1920 - 1) {
-                setX(2 * (1920 - 1) - getX());
-            }
-            if (getX() < 1) {
-                setX(2 * (1) - getX());
-            }
+        if (getX() > 1920 - 1) {
+            setX(2 * (1920 - 1) - getX());
+        }
+        if (getX() < 1) {
+            setX(2 * (1) - getX());
+        }
 
-            /* Other Constraints */
-            // make sure the PointMass stays in its place if it's pinned
-            if (pinned) {
-                setX(getPinX());
-                setY(getPinY());
-                setZ(getPinZ());
-            }
+        /* Other Constraints */
+        // make sure the PointMass stays in its place if it's pinned
+        if (pinned) {
+            setX(getPinX());
+            setY(getPinY());
+            setZ(getPinZ());
+        }
        
     }
 
@@ -176,7 +175,7 @@ public class PointMass{
     }
 
     public void removeLink(Link lnk) {
-        //links.remove(lnk);
+        links.remove(lnk);
         
         constraints.values().remove(lnk);
     }
@@ -325,9 +324,8 @@ public class PointMass{
         this.debug = debug;
     }
     
-     public ConcurrentHashMap<String, Link> getConstraints() {
-     return constraints;
-     }
+    public HashMap<String, Link> getConstraints() {
+        return constraints;
+    }
      
-
 }

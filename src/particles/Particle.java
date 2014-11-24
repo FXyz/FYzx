@@ -107,6 +107,7 @@ public class Particle extends Sphere {
 
     public void updatePhysics(double timeStep) {
         massPoint.updatePhysics(timeStep);
+//        updateUI();
     }
 
     public void updateInteractions() {

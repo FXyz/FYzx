@@ -48,7 +48,7 @@ public class Link {
         double diffX = p1.getX() - p2.getX();
         double diffY = p1.getY() - p2.getY();
         double diffZ = p1.getZ() - p2.getZ();
-        double d = (double) sqrt(diffX * diffX + diffY * diffY + diffZ * diffZ);
+        double d = sqrt(diffX * diffX + diffY * diffY + diffZ * diffZ);
 
         double difference = (restingDistance - d) / d;
 
@@ -67,7 +67,7 @@ public class Link {
         
         p2.setX(p2.getX() - diffX * scalarP2 * difference);
         p2.setY(p2.getY() - diffY * scalarP2 * difference);
-        p2.setZ(p2.getZ() + diffZ * scalarP1 * difference);
+        p2.setZ(p2.getZ() + diffZ * scalarP2 * difference);
     }
 
 }
