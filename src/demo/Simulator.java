@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package particles;
+package demo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +37,7 @@ import javafx.stage.Stage;
  * @author Jason Pollastrini aka jdub1581
  */
 public class Simulator extends Application {
+
     private static final Logger log = Logger.getLogger(Simulator.class.getName());
 
     private final PerspectiveCamera cam = new PerspectiveCamera();
@@ -48,9 +49,9 @@ public class Simulator extends Application {
     @Override
     public void start(Stage stage) {
         log.setLevel(Level.ALL);
-        
-        createCurtain(); 
-        
+
+        createCurtain();
+
         PointLight light = new PointLight(Color.AQUA);
         light.setTranslateZ(-300);
         light.setTranslateY(-150);
@@ -76,10 +77,10 @@ public class Simulator extends Application {
     private final double mouseTearSize = 35;
     private double mouseInfluenceScalar = 5;
     private final double gravity = 300;
-    private final int curtainHeight = 75;
+    private final int curtainHeight = 50;
     private final int curtainWidth = 150;
     private final int yStart = 75;
-    private final double spacing = 5;
+    private final double spacing = 7.5;
     private final double stiffnesses = 1;
     private final double curtainTearSensitivity = 50;
 
@@ -100,13 +101,10 @@ public class Simulator extends Application {
                 if (y == 0 && x == 0) {
                     thisParticle.pinTo(thisParticle.getX(), thisParticle.getY(), thisParticle.getZ());
                 }
-                if (y == 0 && x <= 10) {
-                    thisParticle.pinTo(thisParticle.getX(), thisParticle.getY(), thisParticle.getZ());
-                }
                 if (y == 1 && x == 0) {
                     thisParticle.pinTo(thisParticle.getX(), thisParticle.getY(), thisParticle.getZ());
                 }
-                if (y == 0 && x%15<2) {
+                if (y == 0 && x % 15 < 2) {
                     thisParticle.pinTo(thisParticle.getX(), thisParticle.getY(), thisParticle.getZ());
                 }
                 if (y == 0 && x == curtainWidth) {
@@ -120,10 +118,7 @@ public class Simulator extends Application {
             }
         }
         cloth.getChildren().addAll(masses);
-        
-        cloth.setOnMousePressed(e->{
-            
-        });
+
         log.log(Level.INFO, "Created masses");
     }
     /*
@@ -132,16 +127,16 @@ public class Simulator extends Application {
 
     private long previousTime = System.currentTimeMillis();
     private long currentTime;
-    private final int fixedDeltaTime = 16;
+    private final int fixedDeltaTime = 16; // in Milliseconds
     private final double fixedDeltaTimeSeconds = (double) fixedDeltaTime / 1000.0f;
     private int leftOverDeltaTime;
-    private final int constraintAccuracy = 4;
+    private final int constraintAccuracy = 8;
 
     private final AnimationTimer timer = new AnimationTimer() {
-        
+
         @Override
         public void handle(long now) {
-            
+
             // calculate elapsed time
             currentTime = System.currentTimeMillis();
             long deltaTimeMS = currentTime - previousTime;
@@ -150,23 +145,27 @@ public class Simulator extends Application {
             timeStepAmt = Math.min(timeStepAmt, 5);
             leftOverDeltaTime = (int) deltaTimeMS - (timeStepAmt * fixedDeltaTime);
             mouseInfluenceScalar = 1.0f / timeStepAmt;
-          
+
             for (int iteration = 1; iteration <= timeStepAmt; iteration++) {
-                for (int x = 0; x < constraintAccuracy; x++) {                    
+                for (int x = 0; x < constraintAccuracy; x++) {
+
                     masses.parallelStream().forEach(Particle::solveConstraints);
-                    
+
                 }
                 //log.log(Level.INFO, "Done Solving Constraints");
-                masses.parallelStream().forEach(p->{
-                    p.applyForce(0, gravity, 0); 
-                    p.updateInteractions(); 
-                    p.updatePhysics(fixedDeltaTimeSeconds); 
+                masses.parallelStream().forEach(p -> {
+                    p.applyForce(Math.random(), gravity, Math.random());
+                    //p.updateInteractions(); 
+                    p.updatePhysics(fixedDeltaTimeSeconds);
                 });
-                if(iteration==timeStepAmt){
-                    masses.stream().forEach(Particle::updateUI);
+                if (iteration == timeStepAmt) {
+                    masses.forEach(Particle::updateUI);
                 }
-            }     
-            log.log(Level.INFO, "Updated Physics and UI {0}", (System.currentTimeMillis()-currentTime));
+                //log.log(Level.INFO, "Iteration {0}", (iteration));
+            }
+
+            //log.log(Level.INFO, "Updated Physics and UI {0}", (System.currentTimeMillis()-currentTime));
+            //log.log(Level.INFO, "TimeStepAmount {0}", (timeStepAmt));
         }
     };
 

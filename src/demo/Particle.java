@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package particles;
+package demo;
 
+import constraints.SpringLink;
 import static java.lang.Math.min;
-import java.util.List;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
@@ -45,33 +45,31 @@ public class Particle extends Sphere {
     private final Affine affine = new Affine();
 
     public Particle() {
-        this.setMaterial(material);
-        this.setRadius(3);
+        super(1.5);
+        this.setMaterial(material);        
         this.getTransforms().add(affine);
-        setOnMouseEntered(e -> {
+        this.setOnMouseEntered(e -> {
             oldMouX = mouX;
             oldMouY = mouY;
             mouX = e.getSceneX();
             mouY = e.getSceneY();
-            mousePressed = true;
         });
-        setOnMousePressed(e -> {
+        this.setOnMousePressed(e -> {
+            //System.out.println(getPointMass().getConstraints().size());
             double distanceSquared = distPointToSegmentSquared(oldMouX, oldMouY, mouX, mouY, getX(), getY());
             if (e.isPrimaryButtonDown()) {
-                if (distanceSquared < mouseInfluenceSize) { // remember mouseInfluenceSize was squared in setup()
-                    // To change the velocity of our PointMass, we subtract that change from the lastPosition.
-                    // When the physics gets integrated (see updatePhysics()), the change is calculated
-                    // Here, the velocity is set equal to the cursor's velocity
+                if (distanceSquared < mouseInfluenceSize) { 
                     setLastX(getX() - (mouX - oldMouX) * mouseInfluenceScalar);
                     setLastY(getY() - (mouX - oldMouX) * mouseInfluenceScalar);
+                    setLastY(getZ() - (mouX - oldMouX) * mouseInfluenceScalar);
                 }
             }
             if(e.isSecondaryButtonDown()){
                 massPoint.getConstraints().clear();
-                ((Group)getParent()).getChildren().remove(this);
+                ((Group)getParent()).getChildren().remove(Particle.this);
             }
         });
-        setOnMouseExited(e -> {
+        this.setOnMouseExited(e -> {
             mousePressed = false;
             primaryButtonDown = false;
         });
@@ -93,7 +91,7 @@ public class Particle extends Sphere {
         this.affine.setTz(massPoint.getZ());
     }
 
-    public PointMass getPointMass() {
+    public final PointMass getPointMass() {
         return massPoint;
     }
 
@@ -108,26 +106,6 @@ public class Particle extends Sphere {
     public void updatePhysics(double timeStep) {
         massPoint.updatePhysics(timeStep);
 //        updateUI();
-    }
-
-    public void updateInteractions() {
-        // this is where our interaction comes in.
-        if (mousePressed) {
-            double distanceSquared = distPointToSegmentSquared(oldMouX, oldMouY, mouX, mouY, getX(), getY());
-            if (primaryButtonDown) {
-                if (distanceSquared < mouseInfluenceSize) { // remember mouseInfluenceSize was squared in setup()
-                    // To change the velocity of our PointMass, we subtract that change from the lastPosition.
-                    // When the physics gets integrated (see updatePhysics()), the change is calculated
-                    // Here, the velocity is set equal to the cursor's velocity
-                    setLastX(getX() - (mouX - oldMouX) * mouseInfluenceScalar);
-                    setLastY(getY() - (mouX - oldMouX) * mouseInfluenceScalar);
-                }
-            } else { // if the right mouse button is clicking, we tear the cloth by removing links
-                if (distanceSquared < mouseTearSize) {
-                    //getLinks().clear();
-                }
-            }
-        }
     }
 
     public void solveConstraints() {
@@ -150,7 +128,7 @@ public class Particle extends Sphere {
         massPoint.attachTo(P, restingDist, stiff, tearSensitivity, drawLink);
     }
 
-    public void removeLink(Link lnk) {
+    public void removeLink(SpringLink lnk) {
         massPoint.removeLink(lnk);
     }
 
@@ -262,10 +240,6 @@ public class Particle extends Sphere {
         massPoint.setDamping(damping);
     }
 
-    public List<Link> getLinks() {
-        return massPoint.getLinks();
-    }
-
     public boolean isPinned() {
         return massPoint.isPinned();
     }
@@ -320,4 +294,5 @@ public class Particle extends Sphere {
         return (det * det) / len;
     }
 
+    
 }

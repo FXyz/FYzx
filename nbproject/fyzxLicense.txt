@@ -1,7 +1,8 @@
 <#if licenseFirst??>
 ${licenseFirst}
 </#if>
-${licensePrefix}Copyright (C) ${date?date?string("yyyy")} F(Y)zx :: ${project.organization!user}, 
+${licensePrefix}Copyright (C) ${date?date?string("yyyy")} F(Y)zx :
+${licensePrefix}Authored by : ${project.organization!user}, 
 ${licensePrefix}All rights reserved.
 ${licensePrefix?replace(" +$", "", "r")}
 ${licensePrefix}This program is free software: you can redistribute it and/or modify

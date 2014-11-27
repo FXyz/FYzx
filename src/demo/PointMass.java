@@ -15,12 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package particles;
+package demo;
 
+import constraints.Constraint;
+import constraints.Link;
+import constraints.SpringLink;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import javafx.collections.ObservableList;
 
 /**
  *
@@ -38,7 +40,7 @@ public class PointMass{
 
     // List for links, so we can have as many links as we want to this PointMass
     private List<Link> links = new ArrayList<>();
-    private final HashMap<String, Link> constraints = new HashMap<>();
+    private final HashMap<PointMass, Constraint> constraints = new HashMap<>();
     private boolean pinned = false;
     private double pinX = 0, pinY = 0, pinZ = 0;
 
@@ -103,7 +105,7 @@ public class PointMass{
     /* Constraints */
 
     public void solveConstraints() {
-        /* Link Constraints */
+        /* SpringLink Constraints */
         // Links make sure PointMasss connected to this one is at a set distance away
         // changed from List
         /*if (!links.isEmpty()) {
@@ -111,7 +113,7 @@ public class PointMass{
                 l.solve();
             });
         }*/
-        constraints.values().parallelStream().forEach(Link::solve);
+        constraints.values().parallelStream().forEach(Constraint::solve);
         /* Boundary Constraints */
         // These if statements keep the PointMasss within the screen
         if (getY() < 1) {
@@ -162,9 +164,9 @@ public class PointMass{
     }
 
     public final void attachTo(PointMass P, double restingDist, double stiff, double tearSensitivity, boolean drawLink) {
-        Link lnk = new Link(this, P, restingDist, stiff, tearSensitivity);
+        SpringLink lnk = new SpringLink(this, P, restingDist, stiff, tearSensitivity);
         
-        constraints.put(P.toString(), lnk);
+        constraints.put(P, (Constraint) lnk);
     }
 
     public void pinTo(double pX, double pY, double pZ) {
@@ -174,7 +176,7 @@ public class PointMass{
         this.pinZ = pZ;
     }
 
-    public void removeLink(Link lnk) {
+    public void removeLink(SpringLink lnk) {
         links.remove(lnk);
         
         constraints.values().remove(lnk);
@@ -284,14 +286,6 @@ public class PointMass{
         this.damping = damping;
     }
 
-    public List<Link> getLinks() {
-        return links;
-    }
-
-    public void setLinks(ObservableList<Link> links) {
-        this.links = links;
-    }
-
     public boolean isPinned() {
         return pinned;
     }
@@ -324,7 +318,7 @@ public class PointMass{
         this.debug = debug;
     }
     
-    public HashMap<String, Link> getConstraints() {
+    public HashMap<PointMass, Constraint> getConstraints() {
         return constraints;
     }
      

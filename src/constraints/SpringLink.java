@@ -15,16 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package particles;
+package constraints;
 
+import constraints.Link;
+import demo.PointMass;
 import static java.lang.Math.sqrt;
 
 /**
  *
  * @author Jason Pollastrini aka jdub1581
  */
-// The Link class is used for handling distance constraints between PointMasses.
-public class Link {
+// The SpringLink class is used for handling distance constraints between PointMasses.
+public class SpringLink implements Link{
 
     private final double restingDistance;
     private final double stiffness;
@@ -33,7 +35,7 @@ public class Link {
     private final PointMass p1;
     private final PointMass p2;
 
-    public Link(PointMass which1, PointMass which2, double restingDist, double stiff, double tearSensitivity) {
+    public SpringLink(PointMass which1, PointMass which2, double restingDist, double stiff, double tearSensitivity) {
         this.p1 = which1; 
         this.p2 = which2;
 
@@ -67,7 +69,21 @@ public class Link {
         
         p2.setX(p2.getX() - diffX * scalarP2 * difference);
         p2.setY(p2.getY() - diffY * scalarP2 * difference);
-        p2.setZ(p2.getZ() + diffZ * scalarP2 * difference);
+        p2.setZ(p2.getZ() - diffZ * scalarP2 * difference);
     }
 
+    @Override
+    public void getBody1() {
+        
+    }
+
+    @Override
+    public void getBody2() {
+    }
+
+    @Override
+    public void remove() {
+    }
+
+    
 }

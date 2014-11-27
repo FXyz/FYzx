@@ -15,20 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cubes;
+package testingcubes;
 
-import particles.PointMass;
 import java.util.Arrays;
 import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.TriangleMesh;
 import org.fxyz.shapes.composites.PolyLine3D;
 import org.fxyz.shapes.containers.ShapeContainer;
 import org.fxyz.shapes.primitives.CubeMesh;
-import particles.Link;
-import particles.Particle;
+import constraints.SpringLink;
+import demo.Particle;
+import demo.PointMass;
 
 /**
  * Cube Structure testing bindings
@@ -38,21 +39,21 @@ import particles.Particle;
 public class SoftCube extends ShapeContainer<CubeMesh> {
 
     private final CubeMesh mesh;
+    private TriangleMesh triMesh;
     private double size;
     private final Group debugGroup = new Group();
     private final ObservableList<PointMass> masses = FXCollections.observableArrayList();
     private final ObservableList<Particle> corners = FXCollections.observableArrayList();
-    private final ObservableList<Link> links = FXCollections.observableArrayList();
+    private final ObservableList<SpringLink> links = FXCollections.observableArrayList();
     private final ObservableList<PolyLine3D> lines = FXCollections.observableArrayList();
 
     private double stiffness;
     private double mass;
 
     public SoftCube(double size) {
-        super(new CubeMesh());
+        super(new CubeMesh(size));
         this.mesh = getShape();
-        this.size = size;
-        this.mesh.setSize(size);
+        this.size = getSize();
         this.setDiffuseColor(Color.STEELBLUE);
         this.setEmissiveLightingOn(true);
         this.setEmissiveLightingColor(Color.CHARTREUSE);
@@ -73,7 +74,7 @@ public class SoftCube extends ShapeContainer<CubeMesh> {
             new PointMass(this, hw, hh, hd)
         };
         masses.addAll(Arrays.asList(pma));
-
+        
         if (debug) {
             loadDebugVisuals();
         }
@@ -88,11 +89,11 @@ public class SoftCube extends ShapeContainer<CubeMesh> {
         this.size = size;
     }
 
-    public List<Link> getLinks() {
+    public List<SpringLink> getLinks() {
         return links;
     }
 
-    public void setLinks(ObservableList<Link> links) {
+    public void setLinks(ObservableList<SpringLink> links) {
         this.links.setAll(links);
     }
 
@@ -126,7 +127,7 @@ public class SoftCube extends ShapeContainer<CubeMesh> {
             masses.filtered(mp -> {
                 return !mp.equals(pm);
             }).forEach(p -> {
-                m.attachTo(p, size, stiffness);
+                //m.attachTo(p, size, stiffness);
             });
         });
     }
