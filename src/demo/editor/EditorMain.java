@@ -16,39 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package physicsobjects;
+package demo.editor;
 
-import javafx.geometry.Point3D;
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
 /**
  *
  * @author Jason Pollastrini aka jdub1581
  */
-public class BodyState {
+public class EditorMain extends Application{
+
+    @Override
+    public void start(Stage stage) throws Exception {
+        ClothEditor editor = new ClothEditor();
+        Scene scene = new Scene(editor);
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.show();
+    }
     
-    private Point3D velocity, position;
-    
-    public BodyState(Point3D p, Point3D v){
-        
-        this.velocity = new Point3D(v.getX(),v.getY(),v.getZ());
-        this.position = new Point3D(p.getX(),p.getY(),p.getZ());
-    }
-
-
-    public Point3D getVelocity() {
-        return velocity;
-    }
-
-    public void setVelocity(Point3D v) {
-        this.velocity = v;
-    }
-
-    public Point3D getPosition() {
-        return position;
-    }
-
-    public void setPosition(Point3D p) {
-        this.position = p;
+    public static void main(String[] args){
+        launch(args);
     }
     
 }

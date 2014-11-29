@@ -18,27 +18,54 @@
  */
 package integrators;
 
+import javafx.geometry.Point3D;
 import physicsobjects.Body;
+import physicsobjects.PhysicalState;
 
 /**
  *
  * @author Jason Pollastrini aka jdub1581
  */
-public class VerletIntegrator implements Integrator{
-    private Body body;
+public class VerletIntegrator implements Integrator {
 
-    public VerletIntegrator(Body body) {
-        this.body = body;
+    private final PhysicalState state;
+    private double damping;
+
+    public VerletIntegrator(PhysicalState s, double damp) {
+        this.state = s;
+        this.damping = damp;
     }
-    
-    
+
     @Override
     public void updatePhysics(double t, double dt) {
+        // call recalculates velocity, acceleration, and momentum
+
+        Point3D v = state.getPosition().subtract(state.getPrevPosition()).multiply(damping);
+        double dtSq = dt * dt;
+
+        // calculate the next position using Verlet Integration
+        Point3D nextStatePos = new Point3D(
+                state.getPosition().getX() + v.getX() + state.getBody().getNetForce().getX() * 0.5f * dtSq,
+                state.getPosition().getY() + v.getY() + state.getBody().getNetForce().getY() * 0.5f * dtSq,
+                state.getPosition().getZ() + v.getZ() + state.getBody().getNetForce().getZ() * 0.5f * dtSq
+        );
+
+        state.setPrevPosition(state.getPosition());
+        state.setPosition(nextStatePos);
+        
     }
 
     @Override
     public Body getBody() {
-        return body;
+        return state.getBody();
     }
-    
+
+    public double getDamping() {
+        return damping;
+    }
+
+    public void setDamping(double damping) {
+        this.damping = damping;
+    }
+
 }

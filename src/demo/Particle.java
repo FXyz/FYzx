@@ -17,7 +17,6 @@
  */
 package demo;
 
-import constraints.SpringLink;
 import static java.lang.Math.min;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
@@ -33,10 +32,8 @@ public class Particle extends Sphere {
 
     private final PhongMaterial material = new PhongMaterial(Color.CHARTREUSE);
     private PointMass massPoint;
-    private boolean mousePressed;
-    private boolean primaryButtonDown;
-    private final double mouseInfluenceScalar = 5;
-    private final double mouseInfluenceSize = 20;
+    private final double mouseInfluenceScalar = 10;
+    private final double mouseInfluenceSize = 35;
     private final double mouseTearSize = 10;
     public double mouX;
     public double mouY;
@@ -45,7 +42,7 @@ public class Particle extends Sphere {
     private final Affine affine = new Affine();
 
     public Particle() {
-        super(1.5);
+        super(1.25);
         this.setMaterial(material);        
         this.getTransforms().add(affine);
         this.setOnMouseEntered(e -> {
@@ -68,10 +65,6 @@ public class Particle extends Sphere {
                 massPoint.getConstraints().clear();
                 ((Group)getParent()).getChildren().remove(Particle.this);
             }
-        });
-        this.setOnMouseExited(e -> {
-            mousePressed = false;
-            primaryButtonDown = false;
         });
     }
 

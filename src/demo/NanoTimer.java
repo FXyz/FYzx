@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package timers;
+package demo;
 
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -23,7 +23,6 @@ import java.util.concurrent.ThreadFactory;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
 import javafx.util.Duration;
-import physicsobjects.Body;
 
 /**
  *
@@ -36,12 +35,15 @@ public class NanoTimer extends ScheduledService<Void> {
 
     private long startTime, previousTime;
     private double frameRate, deltaTime;
+    private final double fixedDeltaTime = 0.0016;
+    private int leftOverDeltaTime, timeStepAmt;
     private final NanoThreadFactory tf = new NanoThreadFactory();
-    private final List<? extends Body> bodies;
+    private final List<? extends Particle> bodies;
 
-    int cAcc = 3;
+    int cAcc = 4;
+    private boolean render;
 
-    public NanoTimer(List<? extends Body> bds) {
+    public NanoTimer(List<? extends Particle> bds) {
         super();
         this.bodies = bds;
         this.setPeriod(Duration.millis(16));
@@ -72,7 +74,9 @@ public class NanoTimer extends ScheduledService<Void> {
         deltaTime = (getTime() - previousTime) * (1.0f / ONE_NANO);
         frameRate = 1.0f / deltaTime;
         previousTime = getTime();
-
+        timeStepAmt = (int) ((deltaTime + leftOverDeltaTime) / fixedDeltaTime);
+        timeStepAmt = Math.min(timeStepAmt, 5);
+        leftOverDeltaTime = (int) (deltaTime - (timeStepAmt * fixedDeltaTime));
     }
 
     @Override
@@ -97,15 +101,18 @@ public class NanoTimer extends ScheduledService<Void> {
             @Override
             protected Void call() throws Exception {
                 updateTimer();
-                for (int iteration = 1; iteration <= 4; iteration++) {
-                    
+                for (int iteration = 1; iteration <= 5; iteration++) {
+
                     for (int i = 0; i < cAcc; i++) {
-                        bodies.parallelStream().forEach(Body::solveConstraints);
+                        bodies.parallelStream().forEach(Particle::solveConstraints);
                     }
-                    bodies.parallelStream().forEach(sb -> {     
-                        sb.stepPhysics(getTime(), getDeltaTime());
+                    bodies.parallelStream().forEach(sb -> {
+                        sb.applyForce(0, 1.8, 0);
+                        sb.updatePhysics(deltaTime);
+
                     });
                 }
+                setDelay(Duration.millis(deltaTime));
                 return null;
             }
         };
@@ -114,10 +121,8 @@ public class NanoTimer extends ScheduledService<Void> {
     @Override
     protected void succeeded() {
         super.succeeded();
-        bodies.forEach(sb -> {
-            sb.updateUI();
-        });
-
+        bodies.forEach(Particle::updateUI);            
+       
     }
 
     @Override

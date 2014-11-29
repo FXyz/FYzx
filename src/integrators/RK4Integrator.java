@@ -20,30 +20,33 @@ package integrators;
 
 import javafx.geometry.Point3D;
 import physicsobjects.Body;
-import physicsobjects.BodyState;
+import physicsobjects.PhysicalState;
 
 /**
  *
  * @author Jason Pollastrini aka jdub1581
  */
 public class RK4Integrator implements Integrator {
-    private final Body body;
-    
-    public RK4Integrator(Body b) {
-        this.body = b;
+
+    private final PhysicalState state;
+
+    public RK4Integrator(PhysicalState b) {
+        this.state = b;
     }
 
     @Override
     public Body getBody() {
-        return body;
+        return state.getBody();
     }
 
     @Override
-    public void updatePhysics(double t, double dt) {
-        integrate(getBody().getState(), t, dt);
+    public void updatePhysics(double t, double dt) {        
+        integrate(state, t, dt);        
     }
 
-    private void integrate(BodyState state, double t, double dt) {
+    private void integrate(PhysicalState state, double t, double dt) {
+        
+      
         Derivative a = evaluate(state, t);
         Derivative b = evaluate(state, t, dt * 0.5f, a);
         Derivative c = evaluate(state, t, dt * 0.5f, b);
@@ -52,44 +55,55 @@ public class RK4Integrator implements Integrator {
         Point3D derivedPosition = new Point3D(
                 1.0 / 6.0 * (a.getVelocity().getX() + 2.0f * (b.getVelocity().getX() + c.getVelocity().getX()) + d.getVelocity().getX()),
                 1.0 / 6.0 * (a.getVelocity().getY() + 2.0f * (b.getVelocity().getY() + c.getVelocity().getY()) + d.getVelocity().getY()),
-                1.0 / 6.0 * (a.getVelocity().getZ() + 2.0f * (b.getVelocity().getZ() + c.getVelocity().getZ()) + d.getVelocity().getZ())        
+                1.0 / 6.0 * (a.getVelocity().getZ() + 2.0f * (b.getVelocity().getZ() + c.getVelocity().getZ()) + d.getVelocity().getZ())
         );
         Point3D derivedVelocity = new Point3D(
                 1.0 / 6.0 * (a.getAcceleration().getX() + 2.0f * (b.getAcceleration().getX() + c.getAcceleration().getX()) + d.getAcceleration().getX()),
                 1.0 / 6.0 * (a.getAcceleration().getY() + 2.0f * (b.getAcceleration().getY() + b.getAcceleration().getY()) + d.getAcceleration().getY()),
-                1.0 / 6.0 * (a.getAcceleration().getZ() + 2.0f * (b.getAcceleration().getZ() + b.getAcceleration().getZ()) + d.getAcceleration().getZ())        
-        ); 
+                1.0 / 6.0 * (a.getAcceleration().getZ() + 2.0f * (b.getAcceleration().getZ() + b.getAcceleration().getZ()) + d.getAcceleration().getZ())
+        );
         
-        getBody().setState(new BodyState(state.getPosition().add(derivedPosition.multiply(dt)),state.getVelocity().add(derivedVelocity.multiply(dt))));
+        state.setPrevPosition(state.getPosition());
+        state.setPrevVelocity(state.getVelocity());
+        
+        state.setPosition(state.getPosition().add(derivedPosition.multiply(dt)));
+        state.setVelocity(state.getVelocity().add(derivedVelocity.multiply(dt)));
+        
+        
     }
 
-    private Derivative evaluate(BodyState initial, double t) {
+    private Derivative evaluate(PhysicalState initial, double t) {
+        
         return new Derivative(initial.getVelocity(), acceleration(initial, t));
     }
 
-    private Derivative evaluate(BodyState initial, double t, double dt, Derivative d) {
-        BodyState state = new BodyState(
-                initial.getPosition().add(
+    private Derivative evaluate(PhysicalState s, double t, double dt, Derivative d) {
+        PhysicalState temp = new PhysicalState(state.getBody());
+        temp.setPosition(
+                s.getPosition().add(
                         d.getVelocity().multiply(dt).getX(),
                         d.getVelocity().multiply(dt).getY(),
                         d.getVelocity().multiply(dt).getZ()
-                ),
-                initial.getVelocity().add(
+                )
+        );
+        temp.setVelocity(
+                s.getVelocity().add(
                         d.getAcceleration().multiply(dt).getX(),
                         d.getAcceleration().multiply(dt).getY(),
                         d.getAcceleration().multiply(dt).getZ()
                 )
         );
-        return new Derivative(state.getVelocity(), acceleration(initial, t));
+        return new Derivative(temp.getVelocity(), acceleration(s, dt));
     }
 
-    private Point3D acceleration(BodyState state, double t) {
+    // hooks law
+    private Point3D acceleration(PhysicalState state, double t) {
         double k = 10;
         double b = 1;
         return new Point3D(
-                -(k * state.getPosition().getX()) - (b * state.getVelocity().getX()),
-                -(k * state.getPosition().getY()) - (b * state.getVelocity().getY()),
-                -(k * state.getPosition().getZ()) - (b * state.getVelocity().getZ())
+                -(k * state.getPosition().getX()) - (b * state.getVelocity().getX()) ,
+                -(k * state.getPosition().getY()) - (b * state.getVelocity().getY()) ,
+                -(k * state.getPosition().getZ()) - (b * state.getVelocity().getZ()) 
         );
     }
     /*==============================================================================

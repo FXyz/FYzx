@@ -17,9 +17,7 @@
  */
 package demo;
 
-import constraints.Constraint;
 import constraints.Link;
-import constraints.SpringLink;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,8 +37,8 @@ public class PointMass{
     private double damping = 20;
 
     // List for links, so we can have as many links as we want to this PointMass
-    private List<Link> links = new ArrayList<>();
-    private final HashMap<PointMass, Constraint> constraints = new HashMap<>();
+    private final List<Link> links = new ArrayList<>();
+    private final HashMap<PointMass, SpringLink> constraints = new HashMap<>();
     private boolean pinned = false;
     private double pinX = 0, pinY = 0, pinZ = 0;
 
@@ -113,7 +111,7 @@ public class PointMass{
                 l.solve();
             });
         }*/
-        constraints.values().parallelStream().forEach(Constraint::solve);
+        constraints.values().parallelStream().forEach(SpringLink::solve);
         /* Boundary Constraints */
         // These if statements keep the PointMasss within the screen
         if (getY() < 1) {
@@ -166,7 +164,7 @@ public class PointMass{
     public final void attachTo(PointMass P, double restingDist, double stiff, double tearSensitivity, boolean drawLink) {
         SpringLink lnk = new SpringLink(this, P, restingDist, stiff, tearSensitivity);
         
-        constraints.put(P, (Constraint) lnk);
+        constraints.put(P, lnk);
     }
 
     public void pinTo(double pX, double pY, double pZ) {
@@ -318,7 +316,7 @@ public class PointMass{
         this.debug = debug;
     }
     
-    public HashMap<PointMass, Constraint> getConstraints() {
+    public HashMap<PointMass, SpringLink> getConstraints() {
         return constraints;
     }
      

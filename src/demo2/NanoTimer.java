@@ -15,13 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package timers;
+package demo2;
 
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
+import javafx.geometry.Point3D;
 import javafx.util.Duration;
 import physicsobjects.Body;
 
@@ -39,7 +40,7 @@ public class NanoTimer extends ScheduledService<Void> {
     private final NanoThreadFactory tf = new NanoThreadFactory();
     private final List<? extends Body> bodies;
 
-    int cAcc = 3;
+    private int cAcc = 3;
 
     public NanoTimer(List<? extends Body> bds) {
         super();
@@ -102,8 +103,12 @@ public class NanoTimer extends ScheduledService<Void> {
                     for (int i = 0; i < cAcc; i++) {
                         bodies.parallelStream().forEach(Body::solveConstraints);
                     }
-                    bodies.parallelStream().forEach(sb -> {     
+                    bodies.parallelStream().forEach(sb -> {                        
+                        
+                        sb.addForce(Point3D.ZERO.add(0,0,0));
+                        
                         sb.stepPhysics(getTime(), getDeltaTime());
+                        sb.clearForces();
                     });
                 }
                 return null;

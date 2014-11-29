@@ -25,7 +25,6 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.PerspectiveCamera;
-import javafx.scene.PointLight;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.layout.AnchorPane;
@@ -51,21 +50,21 @@ public class Simulator extends Application {
         log.setLevel(Level.ALL);
 
         createCurtain();
+        
 
-        PointLight light = new PointLight(Color.AQUA);
-        light.setTranslateZ(-300);
-        light.setTranslateY(-150);
-
-        scene = new Scene(root, 1024, 668, true, SceneAntialiasing.BALANCED);
+        scene = new Scene(root, 1200, 700, true, SceneAntialiasing.BALANCED);
         scene.setCamera(cam);
-        scene.setFill(Color.BLACK);
+        scene.setFill(Color.DARKBLUE);
 
-        root.getChildren().addAll(cam, light, cloth);
+        root.getChildren().addAll(cam, cloth);
+        
         stage.setTitle("Hello World!");
         stage.setScene(scene);
         stage.show();
-
-        timer.start();
+        
+        NanoTimer t = new NanoTimer(masses);
+        t.start();
+        //timer.start();
 
     }
 
@@ -77,15 +76,14 @@ public class Simulator extends Application {
     private final double mouseTearSize = 35;
     private double mouseInfluenceScalar = 5;
     private final double gravity = 300;
-    private final int curtainHeight = 50;
-    private final int curtainWidth = 150;
+    private final int curtainHeight = 100;
+    private final int curtainWidth = 300;
     private final int yStart = 75;
-    private final double spacing = 7.5;
-    private final double stiffnesses = 1;
-    private final double curtainTearSensitivity = 50;
+    private final double spacing =3.25;
+    private final double stiffnesses = 1.15;
 
     private void createCurtain() {
-        int midWidth = (int) (1024 / 2 - (curtainWidth * spacing) / 2);
+        int midWidth = (int) (1200 / 2 - (curtainWidth * spacing) / 2);
         for (int y = 0; y <= curtainHeight; y++) {
             for (int x = 0; x <= curtainWidth; x++) {
                 Particle thisParticle = new Particle(midWidth + x * spacing, y * spacing + yStart, 0);
@@ -97,20 +95,11 @@ public class Simulator extends Application {
                     thisParticle.attachTo((masses.get((y - 1) * (curtainWidth + 1) + x).getPointMass()), spacing, stiffnesses);
                 }
 
-                //pin the 3 verts in the top 2 corners
-                if (y == 0 && x == 0) {
+                /*pin the 3 verts in the top 2 corners
+                if (y == 0) {
                     thisParticle.pinTo(thisParticle.getX(), thisParticle.getY(), thisParticle.getZ());
                 }
-                if (y == 1 && x == 0) {
-                    thisParticle.pinTo(thisParticle.getX(), thisParticle.getY(), thisParticle.getZ());
-                }
-                if (y == 0 && x % 15 < 2) {
-                    thisParticle.pinTo(thisParticle.getX(), thisParticle.getY(), thisParticle.getZ());
-                }
-                if (y == 0 && x == curtainWidth) {
-                    thisParticle.pinTo(thisParticle.getX(), thisParticle.getY(), thisParticle.getZ());
-                }
-                if (y == 1 && x == curtainWidth) {
+                */if (y == 0 && x % 15 < 2) {
                     thisParticle.pinTo(thisParticle.getX(), thisParticle.getY(), thisParticle.getZ());
                 }
 
@@ -118,7 +107,7 @@ public class Simulator extends Application {
             }
         }
         cloth.getChildren().addAll(masses);
-
+        
         log.log(Level.INFO, "Created masses");
     }
     /*
@@ -130,7 +119,7 @@ public class Simulator extends Application {
     private final int fixedDeltaTime = 16; // in Milliseconds
     private final double fixedDeltaTimeSeconds = (double) fixedDeltaTime / 1000.0f;
     private int leftOverDeltaTime;
-    private final int constraintAccuracy = 8;
+    private final int constraintAccuracy = 5;
 
     private final AnimationTimer timer = new AnimationTimer() {
 
@@ -139,22 +128,21 @@ public class Simulator extends Application {
 
             // calculate elapsed time
             currentTime = System.currentTimeMillis();
-            long deltaTimeMS = currentTime - previousTime;
+            long delta = currentTime - previousTime;
             previousTime = currentTime;
-            int timeStepAmt = (int) ((double) (deltaTimeMS + leftOverDeltaTime) / (double) fixedDeltaTime);
+            
+            int timeStepAmt = (int) ((double) (delta + leftOverDeltaTime) / (double) fixedDeltaTime);
             timeStepAmt = Math.min(timeStepAmt, 5);
-            leftOverDeltaTime = (int) deltaTimeMS - (timeStepAmt * fixedDeltaTime);
+            leftOverDeltaTime = (int) delta - (timeStepAmt * fixedDeltaTime);
             mouseInfluenceScalar = 1.0f / timeStepAmt;
 
             for (int iteration = 1; iteration <= timeStepAmt; iteration++) {
                 for (int x = 0; x < constraintAccuracy; x++) {
-
                     masses.parallelStream().forEach(Particle::solveConstraints);
-
                 }
                 //log.log(Level.INFO, "Done Solving Constraints");
                 masses.parallelStream().forEach(p -> {
-                    p.applyForce(Math.random(), gravity, Math.random());
+                    p.applyForce(Math.random(), gravity, 12 * Math.random());
                     //p.updateInteractions(); 
                     p.updatePhysics(fixedDeltaTimeSeconds);
                 });

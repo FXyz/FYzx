@@ -27,7 +27,7 @@ import javafx.scene.shape.TriangleMesh;
 import org.fxyz.shapes.composites.PolyLine3D;
 import org.fxyz.shapes.containers.ShapeContainer;
 import org.fxyz.shapes.primitives.CubeMesh;
-import constraints.SpringLink;
+import demo.SpringLink;
 import demo.Particle;
 import demo.PointMass;
 

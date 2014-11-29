@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2014 F(Y)zx :: Jason Pollastrini aka jdub1581, 
+ * Copyright (C) 2014 F(Y)zx :
+ * Authored by : Jason Pollastrini aka jdub1581, 
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,16 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package constraints;
+package physics;
 
-import physicsobjects.Body;
+import timers.NanoTimer;
 
 /**
  *
  * @author Jason Pollastrini aka jdub1581
  */
-public interface Link extends Constraint{
-    public Body getBody1();
-    public Body getBody2();
-    public void remove();
+public class PhysicsEngine1 {
+    
+    private final NanoTimer clock;
+
+    public PhysicsEngine1(NanoTimer clock) {
+        this.clock = clock;
+    }
+     
+    
 }

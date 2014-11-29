@@ -21,6 +21,7 @@ package constraints;
  *
  * @author Jason Pollastrini aka jdub1581
  */
+@FunctionalInterface
 public interface Constraint {
     void solve();
 }
