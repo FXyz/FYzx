@@ -22,30 +22,30 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-
 package util;
 
-import com.sun.javafx.geom.Point2D;
-import com.sun.javafx.geom.Vec3d;
-import com.sun.javafx.geom.transform.Affine3D;
-import com.sun.javafx.geom.transform.BaseTransform;
-import com.sun.javafx.geom.transform.NoninvertibleTransformException;
+import javafx.geometry.Point2D;
+import javafx.geometry.Point3D;
+import javafx.scene.transform.Affine;
+import javafx.scene.transform.NonInvertibleTransformException;
 
 /**
  * A ray used for picking.
  */
 public class Ray {
-    private Vec3d origin = new Vec3d();
-    private Vec3d direction = new Vec3d();
+
+    private Point3D origin = new Point3D(0, 0, 0);
+    private Point3D direction = new Point3D(0, 0, 0);
     private double nearClip = 0.0;
     private double farClip = Double.POSITIVE_INFINITY;
 
 //    static final double EPS = 1.0e-13;
     static final double EPS = 1.0e-5f;
 
-    public Ray() { }
+    public Ray() {
+    }
 
-    public Ray(Vec3d origin, Vec3d direction, double nearClip, double farClip) {
+    public Ray(Point3D origin, Point3D direction, double nearClip, double farClip) {
         set(origin, direction, nearClip, farClip);
     }
 
@@ -57,7 +57,7 @@ public class Ray {
             double x, double y, boolean fixedEye,
             double viewWidth, double viewHeight,
             double fieldOfViewRadians, boolean verticalFieldOfView,
-            Affine3D cameraTransform,
+            Affine transform,
             double nearClip, double farClip,
             Ray pickRay) {
 
@@ -65,38 +65,35 @@ public class Ray {
             pickRay = new Ray();
         }
 
-        Vec3d direction = pickRay.getDirectionNoClone();
+        Point3D direction = pickRay.getDirectionNoClone();
         double halfViewWidth = viewWidth / 2.0;
         double halfViewHeight = viewHeight / 2.0;
-        double halfViewDim = verticalFieldOfView? halfViewHeight: halfViewWidth;
+        double halfViewDim = verticalFieldOfView ? halfViewHeight : halfViewWidth;
         // Distance to projection plane from eye
         double distanceZ = halfViewDim / Math.tan(fieldOfViewRadians / 2.0);
+        direction = Point3D.ZERO.add(x - halfViewWidth, y - halfViewHeight, distanceZ);
 
-        direction.x = x - halfViewWidth;
-        direction.y = y - halfViewHeight;
-        direction.z = distanceZ;
-
-        Vec3d eye = pickRay.getOriginNoClone();
+        Point3D eye = pickRay.getOriginNoClone();
 
         if (fixedEye) {
-            eye.set(0.0, 0.0, 0.0);
+            eye = Point3D.ZERO;
         } else {
             // set eye at center of viewport and move back so that projection plane
             // is at Z = 0
-            eye.set(halfViewWidth, halfViewHeight, -distanceZ);
+            eye = new Point3D(halfViewWidth, halfViewHeight, -distanceZ);
         }
 
-        pickRay.nearClip = nearClip * (direction.length() / (fixedEye ? distanceZ : 1.0));
-        pickRay.farClip = farClip * (direction.length() / (fixedEye ? distanceZ : 1.0));
+        pickRay.nearClip = nearClip * (direction.magnitude() / (fixedEye ? distanceZ : 1.0));
+        pickRay.farClip = farClip * (direction.magnitude() / (fixedEye ? distanceZ : 1.0));
 
-        pickRay.transform(cameraTransform);
+        pickRay.transform(transform);
 
         return pickRay;
     }
 
     public static Ray computeParallelPickRay(
             double x, double y, double viewHeight,
-            Affine3D cameraTransform,
+            Affine transform,
             double nearClip, double farClip,
             Ray pickRay) {
 
@@ -111,14 +108,14 @@ public class Ray {
 
         pickRay.set(x, y, distanceZ, nearClip * distanceZ, farClip * distanceZ);
 
-        if (cameraTransform != null) {
-            pickRay.transform(cameraTransform);
+        if (transform != null) {
+            pickRay.transform(transform);
         }
 
         return pickRay;
     }
 
-    public final void set(Vec3d origin, Vec3d direction, double nearClip, double farClip) {
+    public final void set(Point3D origin, Point3D direction, double nearClip, double farClip) {
         setOrigin(origin);
         setDirection(direction);
         this.nearClip = nearClip;
@@ -131,7 +128,6 @@ public class Ray {
         this.nearClip = nearClip;
         this.farClip = farClip;
     }
-
 
     public void setPickRay(Ray other) {
         setOrigin(other.origin);
@@ -149,8 +145,8 @@ public class Ray {
      *
      * @param origin the origin (in world coordinates).
      */
-    public void setOrigin(Vec3d origin) {
-        this.origin.set(origin);
+    public void setOrigin(Point3D origin) {
+        this.origin = origin;
     }
 
     /**
@@ -161,29 +157,26 @@ public class Ray {
      * @param z the origin Z coordinate
      */
     public void setOrigin(double x, double y, double z) {
-        this.origin.set(x, y, z);
+        this.origin = new Point3D(x, y, z);
     }
 
-    public Vec3d getOrigin(Vec3d rv) {
-        if (rv == null) {
-            rv = new Vec3d();
-        }
-        rv.set(origin);
+    public Point3D getOrigin(Point3D rv) {
+        rv = new Point3D(origin.getX(), origin.getY(), origin.getZ());
         return rv;
     }
 
-    public Vec3d getOriginNoClone() {
+    public Point3D getOriginNoClone() {
         return origin;
     }
 
     /**
-     * Sets the direction vector of the pick ray. This vector need not
-     * be normalized.
+     * Sets the direction vector of the pick ray. This vector need not be
+     * normalized.
      *
      * @param direction the direction vector
      */
-    public void setDirection(Vec3d direction) {
-        this.direction.set(direction);
+    public void setDirection(Point3D direction) {
+        this.direction = direction;
     }
 
     /**
@@ -194,18 +187,15 @@ public class Ray {
      * @param z the direction Z magnitude
      */
     public void setDirection(double x, double y, double z) {
-        this.direction.set(x, y, z);
+        this.direction = new Point3D(x, y, z);
     }
 
-    public Vec3d getDirection(Vec3d rv) {
-        if (rv == null) {
-            rv = new Vec3d();
-        }
-        rv.set(direction);
+    public Point3D getDirection(Point3D rv) {
+        rv = new Point3D(direction.getX(), direction.getY(), direction.getZ());
         return rv;
     }
 
-    public Vec3d getDirectionNoClone() {
+    public Point3D getDirectionNoClone() {
         return direction;
     }
 
@@ -217,46 +207,44 @@ public class Ray {
         return farClip;
     }
 
-    public double distance(Vec3d iPnt) {
-        double x = iPnt.x - origin.x;
-        double y = iPnt.y - origin.y;
-        double z = iPnt.z - origin.z;
-        return Math.sqrt(x*x + y*y + z*z);
+    public double distance(Point3D iPnt) {
+        double x = iPnt.getX() - origin.getX();
+        double y = iPnt.getY() - origin.getY();
+        double z = iPnt.getZ() - origin.getZ();
+        return Math.sqrt(x * x + y * y + z * z);
     }
 
     /**
-     * Project the ray through the specified (inverted) transform and
-     * onto the Z=0 plane of the resulting coordinate system.
-     * If a perspective projection is being used then only a point
-     * that projects forward from the eye to the plane will be returned,
-     * otherwise a null will be returned to indicate that the projection
-     * is behind the eye.
+     * Project the ray through the specified (inverted) transform and onto the
+     * Z=0 plane of the resulting coordinate system. If a perspective projection
+     * is being used then only a point that projects forward from the eye to the
+     * plane will be returned, otherwise a null will be returned to indicate
+     * that the projection is behind the eye.
      *
-     * @param inversetx the inverse of the model transform into which the
-     *                  ray is to be projected
+     * @param inversetx the inverse of the model transform into which the ray is
+     * to be projected
      * @param perspective true if the projection is happening in perspective
-     * @param tmpvec a temporary {@code Vec3d} object for internal use
-     *               (may be null)
-     * @param ret a {@code Point2D} object for storing the return value,
-     *            or null if a new object should be returned.
+     * @param tmpvec a temporary {@code Point3D} object for internal use (may be
+     * null)
+     * @param ret a {@code Point2D} object for storing the return value, or null
+     * if a new object should be returned.
      * @return
      */
-    public Point2D projectToZeroPlane(BaseTransform inversetx,
-                                      boolean perspective,
-                                      Vec3d tmpvec, Point2D ret)
-    {
+    public Point2D projectToZeroPlane(Affine inversetx,
+            boolean perspective,
+            Point3D tmpvec, Point2D ret) {
         if (tmpvec == null) {
-            tmpvec = new Vec3d();
+            tmpvec = new Point3D(0,0,0);
         }
-        inversetx.transform(origin, tmpvec);
-        double origX = tmpvec.x;
-        double origY = tmpvec.y;
-        double origZ = tmpvec.z;
-        tmpvec.add(origin, direction);
-        inversetx.transform(tmpvec, tmpvec);
-        double dirX = tmpvec.x - origX;
-        double dirY = tmpvec.y - origY;
-        double dirZ = tmpvec.z - origZ;
+        tmpvec = inversetx.transform(origin);
+        double origX = tmpvec.getX();
+        double origY = tmpvec.getX();
+        double origZ = tmpvec.getX();
+        tmpvec = origin.add(direction);
+        tmpvec = inversetx.transform(tmpvec);
+        double dirX = tmpvec.getX() - origX;
+        double dirY = tmpvec.getY() - origY;
+        double dirZ = tmpvec.getZ() - origZ;
         // Handle the case where pickRay is almost parallel to the Z-plane
         if (almostZero(dirZ)) {
             return null;
@@ -267,10 +255,10 @@ public class Ray {
             return null;
         }
         if (ret == null) {
-            ret = new Point2D();
+            ret = Point2D.ZERO;
         }
-        ret.setLocation((float) (origX + (dirX * t)),
-                        (float) (origY + (dirY * t)));
+        ret = new Point2D((float) (origX + (dirX * t)),
+                (float) (origY + (dirY * t)));
         return ret;
     }
 
@@ -288,42 +276,35 @@ public class Ray {
 
     }
 
-    public void transform(BaseTransform t) {
-        t.transform(origin, origin);
-        t.deltaTransform(direction, direction);
+    public void transform(Affine t) {
+        t.transform(origin);
+        t.deltaTransform(direction);
     }
 
-    public void inverseTransform(BaseTransform t) 
-            throws NoninvertibleTransformException {
-        t.inverseTransform(origin, origin);
-        t.inverseDeltaTransform(direction, direction);
+    public void inverseTransform(Affine t)throws NonInvertibleTransformException {
+        t.inverseTransform(origin);
+        t.inverseDeltaTransform(direction);
     }
 
-    public Ray project(BaseTransform inversetx,
-                      boolean perspective,
-                      Vec3d tmpvec, Point2D ret)
-    {
+    public Ray project(Affine inversetx,
+            boolean perspective,
+            Point3D tmpvec, Point2D ret) {
         if (tmpvec == null) {
-            tmpvec = new Vec3d();
+            tmpvec = new Point3D(0, 0, 0);
         }
-        inversetx.transform(origin, tmpvec);
-        double origX = tmpvec.x;
-        double origY = tmpvec.y;
-        double origZ = tmpvec.z;
-        tmpvec.add(origin, direction);
-        inversetx.transform(tmpvec, tmpvec);
-        double dirX = tmpvec.x - origX;
-        double dirY = tmpvec.y - origY;
-        double dirZ = tmpvec.z - origZ;
+        tmpvec = inversetx.transform(origin);
+        double origX = tmpvec.getX();
+        double origY = tmpvec.getY();
+        double origZ = tmpvec.getZ();
+        tmpvec = tmpvec.add(direction);
+        tmpvec = inversetx.transform(tmpvec);
+        double dirX = tmpvec.getX() - origX;
+        double dirY = tmpvec.getY() - origY;
+        double dirZ = tmpvec.getZ() - origZ;
 
         Ray pr = new Ray();
-        pr.origin.x = origX;
-        pr.origin.y = origY;
-        pr.origin.z = origZ;
-
-        pr.direction.x = dirX;
-        pr.direction.y = dirY;
-        pr.direction.z = dirZ;
+        pr.setOrigin(origX, origY, origZ);
+        pr.setDirection(dirX, dirY, dirZ);
 
         return pr;
     }
@@ -333,4 +314,3 @@ public class Ray {
         return "origin: " + origin + "  direction: " + direction;
     }
 }
-

@@ -17,7 +17,6 @@
  */
 package timers;
 
-import integrators.RK4Integrator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -32,8 +31,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Sphere;
 import javafx.stage.Stage;
-import physicsobjects.Body;
-import physicsobjects.PhysicalState;
+import physics.integrators.RK4Integrator;
+import physics.physicsobjects.Body;
+import physics.physicsobjects.PhysicalState;
 
 /**
  *

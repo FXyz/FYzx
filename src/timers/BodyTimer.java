@@ -22,6 +22,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
+import javafx.geometry.Point3D;
 import javafx.util.Duration;
 import physics.physicsobjects.Body;
 
@@ -29,7 +30,7 @@ import physics.physicsobjects.Body;
  *
  * @author Jason Pollastrini aka jdub1581
  */
-public class NanoTimer extends ScheduledService<Void> {
+public class BodyTimer extends ScheduledService<Void> {
 
     private final long ONE_NANO = 1000000000L;
     private final double ONE_NANO_INV = 1f / 1000000000L;
@@ -39,9 +40,9 @@ public class NanoTimer extends ScheduledService<Void> {
     private final NanoThreadFactory tf = new NanoThreadFactory();
     private final List<? extends Body> bodies;
 
-    int cAcc = 3;
+    private int cAcc = 3;
 
-    public NanoTimer(List<? extends Body> bds) {
+    public BodyTimer(List<? extends Body> bds) {
         super();
         this.bodies = bds;
         this.setPeriod(Duration.millis(16));
@@ -102,8 +103,12 @@ public class NanoTimer extends ScheduledService<Void> {
                     for (int i = 0; i < cAcc; i++) {
                         bodies.parallelStream().forEach(Body::solveConstraints);
                     }
-                    bodies.parallelStream().forEach(sb -> {     
-                        sb.stepPhysics(getTime(), getDeltaTime());
+                    bodies.parallelStream().forEach(sb -> {                        
+                        
+                        sb.addForce(Point3D.ZERO.add(1,0.1,0));
+                        
+                        sb.stepPhysics(1, getDeltaTime());
+                        sb.clearForces();
                     });
                 }
                 return null;

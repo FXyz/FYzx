@@ -23,7 +23,7 @@ import java.util.concurrent.Executors;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
 import javafx.util.Duration;
-import physicsobjects.Body;
+import physics.physicsobjects.Body;
 
 /**
  * Based on TimeStep example from http://gafferongames.com/game-physics

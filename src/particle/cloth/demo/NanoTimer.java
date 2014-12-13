@@ -15,15 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package timers;
+package particle.cloth.demo;
 
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
 import javafx.util.Duration;
-import physics.physicsobjects.Body;
 
 /**
  *
@@ -31,21 +33,26 @@ import physics.physicsobjects.Body;
  */
 public class NanoTimer extends ScheduledService<Void> {
 
+    private static final Logger log = Logger.getLogger(NanoTimer.class.getName());
+
     private final long ONE_NANO = 1000000000L;
     private final double ONE_NANO_INV = 1f / 1000000000L;
 
     private long startTime, previousTime;
     private double frameRate, deltaTime;
+    private final double fixedDeltaTime = 0.0033;
+    private int leftOverDeltaTime, timeStepAmt;
     private final NanoThreadFactory tf = new NanoThreadFactory();
-    private final List<? extends Body> bodies;
+    private final List<? extends Particle> bodies;
+    private Random r = new Random();
+    int cAcc = 4;
+    private boolean render;
 
-    int cAcc = 3;
-
-    public NanoTimer(List<? extends Body> bds) {
+    public NanoTimer(List<? extends Particle> bds) {
         super();
         this.bodies = bds;
-        this.setPeriod(Duration.millis(16));
-        this.setExecutor(Executors.newCachedThreadPool(tf));
+        this.setPeriod(Duration.millis(33));
+        this.setExecutor(Executors.newSingleThreadExecutor(tf));
     }
 
     public double getTimeAsSeconds() {
@@ -70,9 +77,11 @@ public class NanoTimer extends ScheduledService<Void> {
 
     private void updateTimer() {
         deltaTime = (getTime() - previousTime) * (1.0f / ONE_NANO);
-        frameRate = 1.0f / deltaTime;
+        frameRate = 10.0f / deltaTime;
         previousTime = getTime();
-
+        timeStepAmt = (int) ((deltaTime + leftOverDeltaTime) / fixedDeltaTime);
+        timeStepAmt = Math.min(timeStepAmt, 5);
+        leftOverDeltaTime = (int) (deltaTime - (timeStepAmt * fixedDeltaTime));
     }
 
     @Override
@@ -97,15 +106,19 @@ public class NanoTimer extends ScheduledService<Void> {
             @Override
             protected Void call() throws Exception {
                 updateTimer();
-                for (int iteration = 1; iteration <= 4; iteration++) {
-                    
+                for (int iteration = 1; iteration <= timeStepAmt; iteration++) {
+
                     for (int i = 0; i < cAcc; i++) {
-                        bodies.parallelStream().forEach(Body::solveConstraints);
+                        bodies.parallelStream().forEach(Particle::solveConstraints);
                     }
-                    bodies.parallelStream().forEach(sb -> {     
-                        sb.stepPhysics(getTime(), getDeltaTime());
+                    bodies.parallelStream().forEach(sb -> {
+                        sb.applyForce(0, 9.8, 0);
+                        sb.updatePhysics(deltaTime);
+                        sb.applyForce(0, 9.8, 0);
                     });
                 }
+
+                //setDelay(Duration.millis(deltaTime));
                 return null;
             }
         };
@@ -114,10 +127,9 @@ public class NanoTimer extends ScheduledService<Void> {
     @Override
     protected void succeeded() {
         super.succeeded();
-        bodies.forEach(sb -> {
-            sb.updateUI();
-        });
+        bodies.forEach(Particle::updateUI);
 
+        log.log(Level.INFO, "{0}", this);
     }
 
     @Override

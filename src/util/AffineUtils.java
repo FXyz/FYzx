@@ -30,6 +30,16 @@ import javafx.scene.transform.Transform;
  * @author Jason Pollastrini aka jdub1581
  */
 public class AffineUtils {
+    
+    public static Affine transpose(Affine src) {
+        Affine tmp = new Affine();        
+        tmp.setMxx(src.getMxx());tmp.setMxy(src.getMyx());tmp.setMxz(src.getMzx());        
+        tmp.setMyx(src.getMxy());tmp.setMyy(src.getMyy());tmp.setMyz(src.getMzy());        
+        tmp.setMzx(src.getMxz());tmp.setMzy(src.getMyz());tmp.setMzz(src.getMzz());     
+        
+        return tmp;
+    }
+    
     public static Affine multiply(Affine src, Affine other) {
         Affine tmp = new Affine();
         
@@ -52,9 +62,11 @@ public class AffineUtils {
         tmp.setMxx(src.getMxx() * s.getX());
         tmp.setMxy(src.getMxy() * s.getY());
         tmp.setMxz(src.getMxz() * s.getZ());
+        
         tmp.setMyx(src.getMyx() * s.getX());
         tmp.setMyy(src.getMyy() * s.getY());
         tmp.setMyz(src.getMyz() * s.getZ());
+        
         tmp.setMzx(src.getMzx() * s.getX());
         tmp.setMzy(src.getMzy() * s.getY());
         tmp.setMzz(src.getMzz() * s.getZ());
