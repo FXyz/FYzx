@@ -16,22 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package physics.collision;
+package cloth.editor;
 
-import javafx.event.EventHandler;
-import util.MeshUtils.Collider;
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
 /**
  *
- * @author Jason Pollastrini aka jdub1581 
+ * @author Jason Pollastrini aka jdub1581
  */
-
-public abstract class CollisionHandler implements EventHandler<CollisionEvent>{
+public class EditorMain extends Application{
 
     @Override
-    public void handle(CollisionEvent event) {
-        handleCollision(event.getOtherCollider(), event);
+    public void start(Stage stage) throws Exception {
+        ClothEditor editor = new ClothEditor();
+        Scene scene = new Scene(editor);
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.show();
     }
     
-    public abstract void handleCollision(Collider other, CollisionEvent evt);
+    public static void main(String[] args){
+        launch(args);
+    }
+    
 }

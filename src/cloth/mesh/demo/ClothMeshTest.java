@@ -24,12 +24,14 @@ import javafx.scene.PerspectiveCamera;
 import javafx.scene.PointLight;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
-import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.PhongMaterial;
+import javafx.scene.paint.Stop;
 import javafx.scene.shape.CullFace;
 import javafx.scene.shape.DrawMode;
 import javafx.stage.Stage;
@@ -58,32 +60,41 @@ public class ClothMeshTest extends Application {
         camera.setNearClip(0.1);
         camera.setFarClip(1000000.0);
         camera.setFieldOfView(42);
+        camera.setVerticalFieldOfView(true);
         camera.setTranslateZ(-1500);
 
-        PointLight light = new PointLight(Color.LIMEGREEN);
-        cameraTransform.getChildren().add(light);
+        PointLight light = new PointLight(Color.LIGHTSKYBLUE);
+        //cameraTransform.getChildren().add(light);
         light.translateXProperty().bind(camera.translateXProperty());
         light.translateYProperty().bind(camera.translateYProperty());
         light.translateZProperty().bind(camera.translateZProperty());
 
-        ClothMesh cloth = new ClothMesh(151, 51, 602, 192, 0.75);
-        cloth.setDrawMode(DrawMode.LINE);
+        ClothMesh cloth = new ClothMesh(75, 30, 600, 200, 0.98);
+        cloth.setDrawMode(DrawMode.FILL);
         cloth.setCullFace(CullFace.NONE);
-
-        PhongMaterial mat = new PhongMaterial();
-        mat.setDiffuseMap(new Image("https://kenai.com/attachments/wiki_images/duke/Duke3DprogressionSmall.jpg"));
+        
+        PhongMaterial mat = new PhongMaterial(Color.BLUEVIOLET);
+        //mat.setDiffuseMap(new Image("https:kenai.com/attachments/wiki_images/duke/Duke3DprogressionSmall.jpg"));
         cloth.setMaterial(mat);
 
         StackPane root = new StackPane();
         root.setPickOnBounds(false);
 
+        PointLight light2 = new PointLight(Color.GAINSBORO);
+        light2.setTranslateZ(-1500);
+        PointLight light3 = new PointLight(Color.AZURE);
+        light3.setTranslateZ(-2500);
         Group g = new Group();
         g.getChildren().addAll(cameraTransform, cloth);
 
         root.getChildren().add(g);
 
         Scene scene = new Scene(root, 1200, 600, true, SceneAntialiasing.BALANCED);
-        scene.setFill(Color.DARKCYAN);
+        
+        Stop[] stops = new Stop[]{new Stop(0, Color.BLACK), new Stop(1, Color.RED)};
+        LinearGradient lg = new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, stops);
+        
+        scene.setFill(lg);
         scene.setCamera(camera);
 
         //First person shooter keyboard movement
@@ -117,7 +128,7 @@ public class ClothMeshTest extends Application {
             mousePosY = me.getSceneY();
             mouseOldX = me.getSceneX();
             mouseOldY = me.getSceneY();
-            
+
         });
         scene.setOnMouseDragged((MouseEvent me) -> {
             if (!cloth.isHover()) {
@@ -153,14 +164,12 @@ public class ClothMeshTest extends Application {
         });
 
         stage.setScene(scene);
-        stage.setMaximized(true);
+        //stage.setMaximized(true);
         stage.show();
 
         cloth.startSimulation();
 
     }
-
-    
 
     public static void main(String[] args) {
         Application.launch(args);

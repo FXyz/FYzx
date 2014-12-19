@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.paint.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import cloth.editor.*?>
+
+<fx:root id="frame" styleClass="frame" stylesheets="@viewer.css" type="AnchorPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"> <!--fx:controller="demo.editor.ClothEditor"   -->
+    <children>
+        <AnchorPane id="frame2" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="738.0" prefWidth="1111.0" styleClass="frame2">
+            <children>
+                <StackPane fx:id="subScenePane" layoutX="14.0" layoutY="52.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="225.0" AnchorPane.topAnchor="50.0">
+                    <children>
+                        <SubScene fx:id="subScene" fill="BLACK" height="670.0" layoutX="14.0" layoutY="52.0" width="871.0">
+                            <root>
+                                <Group />
+                            </root>
+                        </SubScene>
+                        <VBox id="controller" fx:id="navControl" alignment="CENTER" layoutX="825.0" layoutY="60.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" spacing="5.0" style="-fx-background-color: rgba(0,0,0,0.35); -fx-background-radius: 25;" StackPane.alignment="TOP_RIGHT">
+                            <children>
+                                <FourWayNavControl fx:id="eyeNav" styleClass="eyeNav" />
+                                <FourWayNavControl fx:id="camNav" styleClass="camNav" />
+                                <ScrollBar fx:id="zoomBar" orientation="VERTICAL" rotate="180.0" styleClass="zoomBar" />
+                            </children>
+                            <padding>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                            </padding>
+                            <effect>
+                                <InnerShadow color="#00fbffd6">
+                                    <input>
+                                        <DropShadow color="#ffffff27" spread="0.68" />
+                                    </input>
+                                </InnerShadow>
+                            </effect>
+                            <StackPane.margin>
+                                <Insets right="10.0" top="10.0" />
+                            </StackPane.margin>
+                        </VBox>
+                    </children>
+                    <effect>
+                        <DropShadow color="#00feff" height="12.1" radius="7.775" />
+                    </effect>
+                </StackPane>
+                <VBox fx:id="editor" layoutX="890.0" layoutY="50.0" spacing="12.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="54.0">
+                    <children>
+                        <Button fx:id="refreshClothButton" layoutX="895.0" layoutY="15.0" mnemonicParsing="false" onAction="#refreshCloth" prefHeight="25.0" prefWidth="202.0" text="Refresh Cloth" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0" />
+                        <VBox fx:id="vlothAttributes" layoutX="893.0" layoutY="50.0" spacing="10.0">
+                            <children>
+                                <VBox fx:id="width" layoutX="899.0" layoutY="50.0">
+                                    <children>
+                                        <Label fx:id="widthLabel" alignment="CENTER" layoutX="899.0" layoutY="50.0" prefHeight="17.0" prefWidth="202.0" text="Cloth Width: 1 to 150" textFill="#e8e5e5">
+                                            <font>
+                                                <Font name="System Bold" size="12.0" />
+                                            </font>
+                                        </Label>
+                                        <Slider fx:id="widthSlider" blockIncrement="1.0" layoutX="899.0" layoutY="65.0" max="150.0" min="1.0" prefHeight="14.0" prefWidth="202.0" value="60.0" />
+                                    </children>
+                                </VBox>
+                                <VBox fx:id="height" layoutX="896.0" layoutY="90.0">
+                                    <children>
+                                        <Label fx:id="heightLabel" alignment="CENTER" layoutX="899.0" layoutY="90.0" prefHeight="17.0" prefWidth="202.0" text="Cloth Height : 2 to 75" textFill="#e8e5e5">
+                                            <font>
+                                                <Font name="System Bold" size="12.0" />
+                                            </font>
+                                        </Label>
+                                        <Slider fx:id="heightSlider" blockIncrement="1.0" layoutX="899.0" layoutY="107.0" max="75.0" min="2.0" prefHeight="14.0" prefWidth="202.0" value="35.0" />
+                                    </children>
+                                </VBox>
+                                <VBox fx:id="spacing" layoutX="896.0" layoutY="131.0">
+                                    <children>
+                                        <Label fx:id="spacingLabel" alignment="CENTER" layoutX="899.0" layoutY="131.0" prefHeight="17.0" prefWidth="202.0" text="Spacing: 1 to 25" textFill="#e8e5e5">
+                                            <font>
+                                                <Font name="System Bold" size="12.0" />
+                                            </font>
+                                        </Label>
+                                        <Slider fx:id="spacingSlider" blockIncrement="1.0" layoutX="899.0" layoutY="148.0" max="25.0" min="1.0" prefHeight="14.0" prefWidth="202.0" value="5.0" />
+                                    </children>
+                                </VBox>
+                            </children>
+                        </VBox>
+                        <Separator prefWidth="200.0" />
+                        <HBox fx:id="materialColors" alignment="CENTER" layoutX="897.3759765625" layoutY="369.0" prefHeight="57.0" prefWidth="202.0" spacing="25.0">
+                            <children>
+                                <VBox alignment="CENTER" layoutX="897.3759765625" layoutY="369.0" spacing="5.0">
+                                    <children>
+                                        <Label layoutX="897.380859375" layoutY="369.0" text="Diffuse Color" textFill="#bfbfbf" />
+                                        <ColorPicker fx:id="vertColorPicker" layoutX="897.3759765625" layoutY="389.0" />
+                                    </children>
+                                </VBox>
+                                <VBox alignment="CENTER" layoutX="998.0" layoutY="369.0" spacing="5.0">
+                                    <children>
+                                        <Label layoutX="897.380859375" layoutY="369.0" text="Pin Color" textFill="#bfbfbf" />
+                                        <ColorPicker fx:id="pinColorPicker" layoutX="897.3759765625" layoutY="389.0" />
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+                        <Separator prefWidth="200.0" />
+                        <VBox fx:id="lighting" alignment="CENTER" layoutX="897.0" layoutY="494.0" spacing="5.0">
+                            <children>
+                                <HBox alignment="CENTER" spacing="15.0">
+                                    <children>
+                                        <VBox spacing="5.0">
+                                            <children>
+                                                <VBox alignment="CENTER" layoutX="897.0" layoutY="494.0" maxHeight="-Infinity" maxWidth="-Infinity" spacing="5.0">
+                                                    <children>
+                                                        <Label layoutX="955.880859375" layoutY="568.5" text="Head Light" textFill="#bcbcbc" />
+                                                        <ColorPicker fx:id="headColorPicker" layoutX="955.8759765625" layoutY="594.5" />
+                                                    </children>
+                                                </VBox>
+                                                <VBox alignment="CENTER" layoutX="1000.0" layoutY="494.0" maxHeight="-Infinity" maxWidth="-Infinity" spacing="5.0">
+                                                    <children>
+                                                        <Label layoutX="955.880859375" layoutY="568.5" text="Ambient Light" textFill="#bcbcbc" />
+                                                        <ColorPicker fx:id="ambientColorPicker" layoutX="955.8759765625" layoutY="594.5" />
+                                                    </children>
+                                                </VBox>
+                                                <VBox alignment="CENTER" layoutX="897.0" layoutY="557.0" maxHeight="-Infinity" maxWidth="-Infinity" spacing="5.0">
+                                                    <children>
+                                                        <Label layoutX="955.880859375" layoutY="568.5" text="Point Light" textFill="#bcbcbc" />
+                                                        <ColorPicker fx:id="pointColorPicker" layoutX="955.8759765625" layoutY="594.5" />
+                                                    </children>
+                                                </VBox>
+                                            </children>
+                                        </VBox>
+                                        <VBox spacing="15.0">
+                                            <children>
+                                                <CheckBox fx:id="headLightOn" layoutX="184.0" layoutY="21.0" mnemonicParsing="false" onAction="#headLightOn" text="HeadLight" textFill="#dadada" />
+                                                <CheckBox fx:id="ambientLightOn" layoutX="271.0" layoutY="21.0" mnemonicParsing="false" onAction="#ambientLightOn" selected="true" text="AmbientLight" textFill="#dadada" />
+                                                <CheckBox fx:id="pointLightOn" layoutX="375.0" layoutY="21.0" mnemonicParsing="false" onAction="#pointLightOn" selected="true" text="PointLight" textFill="#dadada" />
+                                                <CheckBox fx:id="pickingEnabled" layoutX="14.2890625" layoutY="20.5" mnemonicParsing="false" onAction="#allowMousePicking" text="Allow Picking" textFill="#dadada" />
+                                                <CheckBox fx:id="axesOn" layoutX="98.0" layoutY="21.0" mnemonicParsing="false" onAction="#showAxes" selected="true" text="Show Axes" textFill="#dadada" />
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+                        <Separator layoutX="10.0" layoutY="214.0" prefWidth="200.0" />
+                        <VBox fx:id="forceControls" layoutX="899.0" layoutY="666.0" spacing="10.0" AnchorPane.bottomAnchor="16.0" AnchorPane.rightAnchor="10.0">
+                            <children>
+                                <VBox layoutX="892.0" layoutY="565.0" spacing="5.0">
+                                    <children>
+                                        <VBox layoutX="895.0" layoutY="565.0" spacing="5.0">
+                                            <children>
+                                                <Label alignment="CENTER" layoutX="899.0" layoutY="131.0" prefHeight="17.0" prefWidth="202.0" text="Gravity X : " textFill="#e8e5e5">
+                                                    <font>
+                                                        <Font name="System Bold" size="12.0" />
+                                                    </font>
+                                                </Label>
+                                                <Slider fx:id="gravXSlider" blockIncrement="1.0" layoutX="899.0" layoutY="148.0" max="500.0" min="-500.0" prefHeight="14.0" prefWidth="202.0" />
+                                            </children>
+                                        </VBox>
+                                        <VBox layoutX="895.0" layoutY="596.0">
+                                            <children>
+                                                <Label alignment="CENTER" layoutX="899.0" layoutY="131.0" prefHeight="17.0" prefWidth="202.0" text="Gravity Y :" textFill="#e8e5e5">
+                                                    <font>
+                                                        <Font name="System Bold" size="12.0" />
+                                                    </font>
+                                                </Label>
+                                                <Slider fx:id="gravYSlider" blockIncrement="1.0" layoutX="899.0" layoutY="148.0" max="500.0" min="-500.0" prefHeight="14.0" prefWidth="202.0" />
+                                            </children>
+                                        </VBox>
+                                        <VBox layoutX="895.0" layoutY="627.0">
+                                            <children>
+                                                <Label alignment="CENTER" layoutX="899.0" layoutY="131.0" prefHeight="17.0" prefWidth="202.0" text="Gravity Z :" textFill="#e8e5e5">
+                                                    <font>
+                                                        <Font name="System Bold" size="12.0" />
+                                                    </font>
+                                                </Label>
+                                                <Slider fx:id="gravZSlider" blockIncrement="1.0" layoutX="899.0" layoutY="148.0" max="500.0" min="-500.0" prefHeight="14.0" prefWidth="202.0" />
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </VBox>
+                                <Button fx:id="resetForces" layoutX="899.0" layoutY="666.0" mnemonicParsing="false" onAction="#resetGravity" prefHeight="18.0" prefWidth="202.0" text="Reset Gravity" />
+                                <ToggleButton fx:id="animateForces" layoutX="899.0" layoutY="699.0" mnemonicParsing="false" onAction="#toggleRandomForces" prefHeight="18.0" prefWidth="202.0" text="Animate Random Forces" />
+                            </children>
+                        </VBox>
+                        <Separator layoutX="10.0" layoutY="334.0" prefWidth="200.0" />
+                    </children>
+                    <effect>
+                        <DropShadow color="#00ffdd96" spread="0.29" />
+                    </effect>
+                </VBox>
+                <VBox fx:id="header" alignment="CENTER_RIGHT" layoutX="13.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="42.0" prefWidth="881.0" spacing="10.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="225.0" AnchorPane.topAnchor="5.0">
+                    <children>
+                        <VBox layoutX="13.0" layoutY="28.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" spacing="10.0">
+                            <children>
+                                <HBox>
+                                    <children>
+                                        <Label fx:id="frameRateLabel" layoutX="13.0" layoutY="23.0" prefHeight="17.0" prefWidth="137.0" text="Frame Rate: " textFill="#d3d3d3" />
+                                        <Label fx:id="currentTimeLabel" layoutX="10.0" layoutY="10.0" prefHeight="17.0" prefWidth="137.0" text="Current Time: " textFill="#d3d3d3" />
+                                        <Label fx:id="elapsedTimeLabel" layoutX="147.0" layoutY="10.0" prefHeight="17.0" prefWidth="137.0" text="Elapsed Time:" textFill="#d3d3d3" />
+                                        <Label fx:id="deltaTimeLabel" layoutX="284.0" layoutY="10.0" prefHeight="17.0" prefWidth="137.0" text="Delta Time:" textFill="#d3d3d3" />
+                                        <Label fx:id="numPhysObjects" layoutX="421.0" layoutY="10.0" prefHeight="17.0" prefWidth="137.0" text="PhysicsObjects: " textFill="#d3d3d3" />
+                                        <Label fx:id="numConstraints" layoutX="558.0" layoutY="10.0" prefHeight="17.0" prefWidth="137.0" text="Constraints:" textFill="#d3d3d3" />
+                                    </children>
+                                </HBox>
+                                <ProgressBar fx:id="efficiencyMeter" layoutX="13.0" layoutY="45.0" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="5.0" prefWidth="871.0" progress="0.0" HBox.hgrow="ALWAYS" />
+                            </children>
+                            <effect>
+                                <DropShadow color="#009a8b" />
+                            </effect>
+                        </VBox>
+                    </children>
+                </VBox>
+                <StackPane fx:id="logo" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="42.0" prefWidth="210.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+                    <children>
+                        <Text fx:id="textLogo" strokeType="OUTSIDE" strokeWidth="0.0" text="F(Y)zx engine">
+                            <font>
+                                <Font name="Comic Sans MS" size="31.0" />
+                            </font>
+                            <fill>
+                                <LinearGradient endX="1.0" endY="1.0" startX="1.0">
+                                    <stops>
+                                        <Stop color="#00ff1499" />
+                                        <Stop color="#cdcdcd" offset="1.0" />
+                                    </stops>
+                                </LinearGradient>
+                            </fill>
+                            <effect>
+                                <Lighting diffuseConstant="2.0" specularConstant="0.86" specularExponent="40.0" surfaceScale="10.0">
+                                    <bumpInput>
+                                        <DropShadow color="AQUA" spread="0.15" />
+                                    </bumpInput>
+                                    <light>
+                                        <Light.Distant azimuth="158.03" color="#11b898" elevation="149.65" />
+                                    </light>
+                                    <contentInput>
+                                        <Glow level="1.0">
+                                            <input>
+                                                <Bloom />
+                                            </input>
+                                        </Glow>
+                                    </contentInput>
+                                </Lighting>
+                            </effect>
+                        </Text>
+                    </children>
+                </StackPane>
+                <VBox maxWidth="-Infinity" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="10.0">
+                    <children>
+                        <Button fx:id="startAnimationButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="202.0" text="Start Animation" />
+                    </children>
+                    <effect>
+                        <DropShadow color="#00ffea" />
+                    </effect>
+                </VBox>
+            </children>
+            <effect>
+                <InnerShadow choke="0.28" color="#0086ab85" />
+            </effect>
+        </AnchorPane>
+    </children>
+</fx:root>

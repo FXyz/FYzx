@@ -24,7 +24,7 @@ import org.fxyz.geometry.Point3D;
  *
  * @author Jason Pollastrini aka jdub1581
  */
-public class PointLink {
+public class PointLink implements Constraint{
 
         private final double distance, stiffness;
         private final WeightedPoint p1, p2;

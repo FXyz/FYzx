@@ -46,7 +46,7 @@ public class PhysicsUpdateService extends ScheduledService<Void> {
             
     public double delta;
 
-    private final List<particle.cloth.demo.Particle> physicsBodies = new ArrayList<>();
+    private final List<cloth.particle.demo.Particle> physicsBodies = new ArrayList<>();
 
     public PhysicsUpdateService(long targetFPS) {
         this.setPeriod(Duration.millis(10));

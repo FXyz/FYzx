@@ -16,25 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package physics.physicsobjects.shapes;
+package cloth.mesh.demo;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import javafx.geometry.Point3D;
+import java.util.stream.IntStream;
 
 /**
  *
  * @author Jason Pollastrini aka jdub1581
  */
-public class ClothMesh {
-    public BiFunction<Integer, float[], Point3D> convertArrayToPoint = (i, a)->{
-        return new Point3D(
-            a[i], a[i + 1], a[i + 2]
-        );
-    };
-    public Function<Point3D, float[]> convertPointToArray = (p)->{
-        return new float[]{
-            (float)p.getX(), (float)p.getY(), (float)p.getZ()
-        };
-    };
+@FunctionalInterface
+public interface Constraint {
+    
+    public void solve();
+    
+    public default void solve(int iter){
+        IntStream.range(0, iter).parallel().forEach(i->{solve();});
+    }
 }

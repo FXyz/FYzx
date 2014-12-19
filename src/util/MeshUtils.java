@@ -23,12 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import javafx.collections.ObservableFloatArray;
-import javafx.geometry.Bounds;
 import javafx.geometry.Point3D;
-import javafx.scene.Node;
 import javafx.scene.shape.TriangleMesh;
 
 /**
@@ -102,28 +98,7 @@ public class MeshUtils {
         return mesh.getFaces().toArray(index, null, index + 6);
     };
 
-    @FunctionalInterface
-    public interface BoundsCollider<T extends Bounds> {
-        
-        public void handleCollision(T self, T other);
-       
-        default void checkCollisions(T self, List<T> others) {
-            Collector<T,?,List<T>> col = Collectors.toList();
-            others.parallelStream().filter((notMe) -> {
-                        return !notMe.equals(self);
-                    }
-            ).collect(col).stream().filter((colliding)->{
-                        return colliding.intersects(self);
-                    }
-            ).forEach((other)->{
-                handleCollision(self, other);
-            });
-        }       
-        
-    }
+   
 
-    @FunctionalInterface
-    public interface Collider<T extends Node>{
-        public T getColliderNode();
-    }
+    
 }

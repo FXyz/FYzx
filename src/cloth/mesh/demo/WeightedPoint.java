@@ -35,7 +35,7 @@ public class WeightedPoint {
                 anchorPosition,
                 force;
 
-        private final HashMap<WeightedPoint, PointLink> constraints = new HashMap<>();
+        private final HashMap<WeightedPoint, Constraint> constraints = new HashMap<>();
 
         private boolean anchored = false,
                 forceAffected = true;
@@ -89,44 +89,35 @@ public class WeightedPoint {
 
         public void attatchTo(WeightedPoint self, WeightedPoint other, double linkDistance, double stiffness) {
             PointLink pl = new PointLink(self, other, linkDistance, stiffness);
-            addConstraint(other, pl);
+            addConstraint(other, (Constraint) pl);
         }
 
         //==========================================================================
-        public HashMap<WeightedPoint, PointLink> getConstraints() {
+        public HashMap<WeightedPoint, Constraint> getConstraints() {
             return constraints;
         }
 
-        public void addConstraint(WeightedPoint other, PointLink constraint) {
+        public void addConstraint(WeightedPoint other, Constraint constraint) {
             this.constraints.put(other, constraint);
         }
 
-        public void removeConstraint(PointLink pl) {
-            if (constraints.containsValue(pl)) {
-                pl.getAttachedPoint().getConstraints().values().forEach(other -> {
-                    if (other.getAttachedPoint().equals(pl.getAnchorPoint())) {
-                        pl.getAttachedPoint().removeConstraint(other);
-                    }
-                });
-                removeConstraint(pl);
-            }
+        public void addConstraint(Constraint c){
+            this.constraints.put(this, c);
+        }
+        
+        public void removeConstraint(Constraint pl) {
+            
         }
 
         public void clearConstraints() {
-            constraints.values().stream().forEach(c -> {
-                c.getAttachedPoint().getConstraints().values().forEach(other -> {
-                    if (other.getAttachedPoint().equals(c.getAnchorPoint())) {
-                        c.getAttachedPoint().removeConstraint(other);
-                    }
-                });
-            });
+            constraints.clear();
         }
         /*==========================================================================
          Updating
          */
 
         public void solveConstraints() {
-            constraints.values().parallelStream().forEach(c -> {
+            constraints.values().parallelStream().forEach((Constraint c) -> {
                 c.solve();
             });
         }
@@ -276,16 +267,7 @@ public class WeightedPoint {
          */
         @Override
         public String toString() {
-            return "WeightedPoint{" + "parent=" + parent
-                    + ", \nmass=" + mass
-                    + ", \nposition=" + position
-                    + ", \noldPosition=" + oldPosition
-                    + ", \nanchorPosition=" + anchorPosition
-                    + ", \nforce=" + force
-                    + ", \nconstraints=" + constraints
-                    + ", \nanchored=" + anchored
-                    + ", \nforceAffected=" + forceAffected
-                    + "\n}";
+            return "WeightedPoint: ".concat(position.toString());
         }
 
     }//End WeightedPoint========================================================

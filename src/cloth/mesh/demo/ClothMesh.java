@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.logging.Level;
+import java.util.function.BiFunction;
 import java.util.logging.Logger;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -61,6 +61,16 @@ public class ClothMesh extends MeshView {
     private double mouseOldY;
     private double mouseDeltaX;
     private double mouseDeltaY;
+    private BiFunction<Integer, TriangleMesh, int[]> faceValues = (index, m) -> {
+        if (index > ((m.getFaces().size() - 1) - m.getFaceElementSize())) {
+            return null;
+        }
+        if (index > 0) {
+            index = (index * 6);
+            return m.getFaces().toArray(index, null, 6);
+        }
+        return m.getFaces().toArray(index, null, index + 6);
+    };
 
     private EventHandler<MouseEvent> onPressed;
 
@@ -86,21 +96,22 @@ public class ClothMesh extends MeshView {
         this.buildMesh(getDivisionsX(), getDivisionsY(), getClothWidth(), getClothHeight(), getStiffness());
 
         this.setOnMousePressed((MouseEvent me) -> {
-            mousePosX = me.getSceneX();
-            mousePosY = me.getSceneY();
-            mouseOldX = me.getSceneX();
-            mouseOldY = me.getSceneY();
-
             if (me.isPrimaryButtonDown()) {
                 PickResult pr = me.getPickResult();
-
                 if (pr.getIntersectedFace() != -1) {
-                    log.log(Level.INFO, "\n Face : {0}", pr.getIntersectedFace());                    
-                    
+                    int[] vals = faceValues.apply(pr.getIntersectedFace(), mesh);
+                    if (me.isControlDown()) {
+                        pointList.get(vals[0]).setOldPosition(pointList.get(vals[0]).getOldPosition().add(0, 0, 20));
+                        pointList.get(vals[2]).setOldPosition(pointList.get(vals[2]).getOldPosition().add(0, 0, 20));
+                        pointList.get(vals[4]).setOldPosition(pointList.get(vals[4]).getOldPosition().add(0, 0, 20));
+                    } else {
+                        pointList.get(vals[0]).setOldPosition(pointList.get(vals[0]).getOldPosition().add(0, 0, -20));
+                        pointList.get(vals[2]).setOldPosition(pointList.get(vals[2]).getOldPosition().add(0, 0, -20));
+                        pointList.get(vals[4]).setOldPosition(pointList.get(vals[4]).getOldPosition().add(0, 0, -20));
+                    }
                 }
             }
         });
-
     }
 
 
@@ -159,10 +170,10 @@ public class ClothMesh extends MeshView {
                 float fx = (1 - currX) * minX + currX * maxX;
 
                 //create point: parent, mass, x, y, z
-                WeightedPoint p = new WeightedPoint(this, 0.51, fx, fy, Math.random());
-
+                WeightedPoint p = new WeightedPoint(this, 1, fx, fy, Math.random());
+                if(Y <= 10)p.setMass(5f);
                 //Pin Points in place
-                if (Y == 0 && X % 10 > 8 || (X == 0 && Y == 0)) {
+                if (Y == 0 && X % 25 == 0 || (X == 0 && Y == 0) || (X == sDivX && Y == 0)) {
                     p.setAnchored(true);
                     p.setForceAffected(false);
                 } else {
@@ -371,7 +382,8 @@ public class ClothMesh extends MeshView {
         private final NanoThreadFactory tf = new NanoThreadFactory();
         private final ClothMesh mesh;
         private final List<WeightedPoint> points;
-        int cAcc = 4;
+        int iterations = 4;
+        int accuracyLevel = 4;
         private boolean paused;
         private double windDelay = 1.75;
 
@@ -432,46 +444,45 @@ public class ClothMesh extends MeshView {
                 @Override
                 protected Void call() throws Exception {
                     updateTimer();
-                    // the more we solve the more accurate we are, and more time spent calculating
-                    for (int iteration = 1; iteration <= timeStepAmt; iteration++) {
-                        //lets make some random wind
-                        /*if (readyForWind) {
-                         Point3D wind = new Point3D(
-                         (float) new Random().doubles(20, 0, 10).findAny().getAsDouble(),
-                         (float) new Random().doubles(4, 0, 1).findAny().getAsDouble(),
-                         (float) new Random().doubles(10, 0, 10).findAny().getAsDouble()
-                         );
-                         //circle is for applying force to a selected group of points that fall within its bounds
-                         Circle area = new Circle(Math.sqrt(getClothHeight()) * Math.random() * deltaTime);
-                         area.setCenterX(mesh.getBoundsInParent().getMinX());
-                         area.setCenterY(mesh.getClothHeight() / getDivisionsY() * new Random().doubles(0, getDivisionsY()).findAny().getAsDouble() * deltaTime);
-                         points.parallelStream().filter(
-                         isForcable -> {
-                         return area.getBoundsInLocal().contains(new javafx.geometry.Point3D(isForcable.position.x, isForcable.position.y, isForcable.position.z));
-                         }
-                         ).parallel().forEach(point -> {
-                         point.setOldPosition(point.getOldPosition().add(wind.normalize().multiply(0.5f)));
-                         });
-                         readyForWind = false;
-                         }*/
 
-                    }
                     /*
                      Standard updates
                      */
                     points.parallelStream().forEach(p -> {
-                        p.applyForce(new Point3D(0, 0.098f, 0));
+                        p.applyForce(new Point3D(0, 4, 0));
                     });
-                    for (int i = 0; i < cAcc; i++) {
+                    for (int i = 0; i < accuracyLevel; i++) {
                         points.parallelStream().forEach(WeightedPoint::solveConstraints);
                     }
                     points.parallelStream().forEach(p -> {
-                        p.applyForce(new Point3D(0, 0.098f, 0));
+                        p.applyForce(new Point3D(0, 4, 0));
                         p.updatePhysics(deltaTime, 1);
                         p.clearForces();
                     });
-
-                    //setDelay(Duration.millis(deltaTime));
+                    /*/
+                     IntStream.range(0, iterations).forEachOrdered(iter -> {
+                     points.stream().parallel()
+                     .map((WeightedPoint applyForce) -> {
+                     applyForce.applyForce(new Point3D(0, 0.098f, 0));
+                     return applyForce;
+                     }).peek(System.out::println)
+                     .map((WeightedPoint solve) -> {
+                     IntStream.range(0, accuracyLevel).forEachOrdered(solveIter -> {
+                     solve.getConstraints().values()
+                     .stream().parallel()
+                     .forEach((PointLink link) -> {
+                     link.solve();                                       
+                     });
+                     });
+                     return solve;
+                     }).peek(System.out::println)
+                     .map((WeightedPoint step) -> {
+                     step.updatePhysics(deltaTime, 1);
+                     return step;
+                     }).peek(System.out::println)
+                     .forEach(WeightedPoint::clearForces);
+                     });
+                     */
                     return null;
                 }
             };

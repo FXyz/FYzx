@@ -18,26 +18,17 @@
  */
 package physics.collision;
 
+import javafx.scene.Node;
+
 /**
- * The Idea is to collect A list of Nodes (this) collided with
- * 
+ *
  * @author Jason Pollastrini aka jdub1581
+ * @param <T> type of node to check collisions on
  */
-public class CollisionResults {
-    private final CollisionType typeOfCollision;
-    private final Collider other;
-
-    public CollisionResults(CollisionType type, Collider other) {
-        this.typeOfCollision = type;
-        this.other = other;
-    }
-
-    public CollisionType getTypeOfCollision() {
-        return typeOfCollision;
-    }
-
-    public <T>Collider getOther() {
-        return other;
-    }
+@FunctionalInterface
+public interface Collider<T extends Node> {
+    
+    public void handleCollision(Node other);
+    public default  T getCollideableNode(T src){return src;}
     
 }
